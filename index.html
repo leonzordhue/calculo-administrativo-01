@@ -1927,19 +1927,21 @@ function err_(data) {
 
 const PREVIEW_FIELDS_SEDUC = [
   { section: '📋 Identificação do Servidor' },
-  { id: 's-nome',       label: 'Nome Completo',           obs: 'Conforme documento oficial',          type: 'text',   req: true  },
-  { id: 's-matricula',  label: 'Matrícula / CPF',         obs: 'Número funcional ou CPF do servidor', type: 'text',   req: true  },
-  { id: 's-cargo',      label: 'Cargo / Função',          obs: 'Cargo conforme portaria de nomeação', type: 'text',   req: false },
+  { id: 's-nome',       label: 'Nome Completo',           obs: 'Conforme documento oficial',           type: 'text',   req: true  },
+  { id: 's-matricula',  label: 'Matrícula / CPF',         obs: 'Número funcional ou CPF do servidor',  type: 'text',   req: true  },
+  { id: 's-cargo',      label: 'Cargo / Função',          obs: 'Cargo conforme portaria de nomeação',  type: 'text',   req: false },
   { section: '📊 Dados Funcionais' },
-  { id: 's-posse',      label: 'Data de Posse / Ingresso',obs: 'Início do vínculo estatutário',       type: 'date',   req: true  },
-  { id: 's-classe',     label: 'Classe Atual',            obs: 'Nível na carreira do magistério',     type: 'select', req: true  },
-  { id: 's-ref',        label: 'Referência Atual (paga)', obs: 'Ref. constante na folha de pagamento',type: 'select', req: true  },
-  { id: 's-ref-inicial',label: 'Ref. no Ingresso',        obs: 'Se igual à atual, deixar em branco',  type: 'select', req: false },
+  { id: 's-posse',      label: 'Data de Posse / Ingresso',obs: 'Início do vínculo estatutário',        type: 'date',   req: true  },
+  { id: 's-classe',     label: 'Classe Atual',            obs: 'Nível na carreira do magistério',      type: 'select', req: true  },
+  { id: 's-ref',        label: 'Referência Atual (paga)', obs: 'Ref. constante na folha de pagamento', type: 'select', req: true  },
+  { id: 's-ref-inicial',label: 'Ref. no Ingresso',        obs: 'Se igual à atual, deixar em branco',   type: 'select', req: false },
   { section: '📅 Período do Retroativo' },
   { id: 's-inicio',     label: 'Início do Período',       obs: 'Prazo máx. 5 anos — Dec. 20.910/1932', type: 'date',  req: true  },
-  { id: 's-fim',        label: 'Fim do Período',          obs: 'Normalmente data atual',              type: 'date',   req: true  },
-  { section: '⚙️ Parâmetros' },
+  { id: 's-fim',        label: 'Fim do Período',          obs: 'Normalmente data atual',               type: 'date',   req: true  },
+  { section: '⚙️ Parâmetros de Cálculo' },
   { name: 'extras',     label: '13.º / 1/3 Férias',       obs: 'STJ Tema 1075 — devidos sobre a dif.', type: 'radio', req: true  },
+  { name: 'regencia',   label: 'Regência de Classe',      obs: '+25% sobre o vencimento base',         type: 'radio', req: true  },
+  { id: 's-municipio',  label: 'Município de Lotação',    obs: 'Define % da Gratificação de Localidade', type: 'select', req: true },
 ];
 
 const PREVIEW_FIELDS_SEMED = [
@@ -1974,7 +1976,15 @@ function formatPreviewValue(field, raw) {
     return d ? fmtData(d) : raw;
   }
   if (field.type === 'radio') {
+    if (field.name === 'regencia') return raw === 'sim' ? '✓ Sim — +25% Regência' : '✗ Não — sem regência';
     return raw === 'sim' ? '✓ Sim — incluir 13.º e férias' : '✗ Não — somente salário base';
+  }
+  // Município: exibir só o nome, sem o sufixo |percentual
+  if (field.id === 's-municipio' && raw.includes('|')) {
+    const [nome, pct] = raw.split('|');
+    const pctNum = parseFloat(pct);
+    const pctLabel = pctNum === 0 ? 'Zona A — 0%' : `Zona — +${Math.round(pctNum*100)}%`;
+    return `${nome} (${pctLabel})`;
   }
   if (field.id && field.id.includes('classe')) return raw + ' Classe';
   return raw.toUpperCase ? raw.toUpperCase() : raw;
@@ -2042,9 +2052,9 @@ function atualizarPreview() {
 }
 
 function bindPreviewListeners() {
-  // Bind all inputs for both forms
   const ids = [
-    's-nome','s-matricula','s-cargo','s-posse','s-classe','s-ref','s-ref-inicial','s-inicio','s-fim',
+    's-nome','s-matricula','s-cargo','s-posse','s-classe','s-ref','s-ref-inicial',
+    's-inicio','s-fim','s-municipio',
     'm-nome','m-matricula','m-cargo','m-posse','m-ref','m-ref-inicial','m-inicio','m-fim'
   ];
   ids.forEach(id => {
@@ -2052,8 +2062,8 @@ function bindPreviewListeners() {
     if (el) el.addEventListener('input', atualizarPreview);
     if (el) el.addEventListener('change', atualizarPreview);
   });
-  // Radios
-  document.querySelectorAll('input[name="extras"], input[name="extras_m"]').forEach(r => {
+  // Radios — extras, extras_m, regencia
+  document.querySelectorAll('input[name="extras"], input[name="extras_m"], input[name="regencia"]').forEach(r => {
     r.addEventListener('change', atualizarPreview);
   });
 }
