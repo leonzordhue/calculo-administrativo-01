@@ -446,7 +446,7 @@
       </div>
       <div class="card-body">
         <div class="area-grid">
-          <button class="area-btn" onclick="selecionarArea('seduc')">
+          <button class="area-btn" onclick="selecionarArea('seduc', this)">
             <div class="area-btn-icon">📚</div>
             <div class="area-btn-info">
               <div class="area-btn-title">Educação Estadual</div>
@@ -454,7 +454,7 @@
               <span class="area-btn-badge badge-ok">✓ Disponível</span>
             </div>
           </button>
-          <button class="area-btn" onclick="selecionarArea('semed')">
+          <button class="area-btn" onclick="selecionarArea('semed', this)">
             <div class="area-btn-icon">🏫</div>
             <div class="area-btn-info">
               <div class="area-btn-title">Educação Municipal</div>
@@ -1250,26 +1250,16 @@ function gerarDemonstrativo(params) {
   };
 }
 
-  return {
-    rows, erros, totalDiff, nMeses, numProgressoesAtraso,
-    refInicial, refDevida, area, nome, matricula, cargo, classe,
-    posseDate, startDate, endDate, incluirExtras,
-    // Para salvar no Sheets
-    dataCalculo: new Date()
-  };
-}
-
 // ─────────────────────────────────────────
 // 5. RENDERIZAÇÃO DA INTERFACE
 // ─────────────────────────────────────────
 
 let AREA_FORM = null; // 'seduc' | 'semed'
 
-function selecionarArea(area) {
+function selecionarArea(area, el) {
   AREA_FORM = area;
-  // Update UI
   document.querySelectorAll('.area-btn').forEach(b => b.classList.remove('selected'));
-  event.currentTarget.classList.add('selected');
+  if (el) el.classList.add('selected');
 
   // Show/hide forms
   document.getElementById('form-seduc').classList.toggle('hidden', area !== 'seduc');
