@@ -139,10 +139,45 @@
     .field input:focus, .field select:focus { border-color:var(--teal); box-shadow:0 0 0 3px rgba(11,74,68,0.1); }
     .field input.error, .field select.error { border-color:var(--error); }
     .field select { background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%238899AA' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right 1rem center; padding-right:2.5rem; }
-    .radio-group { display:flex; gap:0.6rem; flex-wrap:wrap; }
-    .radio-opt { display:flex; align-items:center; gap:0.4rem; cursor:pointer; }
-    .radio-opt input[type=radio] { width:16px; height:16px; accent-color:var(--teal); flex-shrink:0; }
-    .radio-opt span { font-size:0.86rem; font-weight:500; color:var(--text); }
+    .radio-group { display:flex; gap:0.5rem; flex-wrap:wrap; }
+    .radio-opt { position:relative; flex:1; min-width:140px; }
+    .radio-opt input[type=radio] {
+      position:absolute; opacity:0; width:0; height:0; pointer-events:none;
+    }
+    .radio-opt-label {
+      display:flex; align-items:center; gap:0.55rem; cursor:pointer;
+      border:2px solid var(--gray-brd); border-radius:9px;
+      padding:0.7rem 1rem; background:var(--white);
+      font-family:var(--font); font-size:0.86rem; font-weight:500; color:var(--text-mid);
+      transition:all 0.16s; -webkit-tap-highlight-color:transparent;
+      user-select:none; -webkit-user-select:none;
+      min-height:48px; /* touch target */
+    }
+    .radio-opt-label:hover { border-color:var(--teal-brd); background:var(--teal-bg); }
+    .radio-opt input[type=radio]:checked + .radio-opt-label {
+      border-color:var(--teal); background:var(--teal-bg);
+      color:var(--teal); font-weight:700;
+      box-shadow:0 0 0 3px rgba(11,74,68,0.1);
+    }
+    .radio-dot {
+      width:18px; height:18px; border-radius:50%; border:2px solid var(--gray-brd);
+      display:flex; align-items:center; justify-content:center; flex-shrink:0;
+      transition:all 0.16s; background:var(--white);
+    }
+    .radio-opt input[type=radio]:checked + .radio-opt-label .radio-dot {
+      border-color:var(--teal); background:var(--teal);
+    }
+    .radio-dot::after {
+      content:''; width:7px; height:7px; border-radius:50%;
+      background:transparent; transition:background 0.14s;
+    }
+    .radio-opt input[type=radio]:checked + .radio-opt-label .radio-dot::after {
+      background:var(--white);
+    }
+    @media(max-width:480px) {
+      .radio-group { flex-direction:column; }
+      .radio-opt { min-width:100%; }
+    }
     .form-divider { grid-column:1/-1; border:none; border-top:1.5px solid var(--gray-light); margin:0.25rem 0; }
     .form-section-title { grid-column:1/-1; font-size:0.63rem; font-weight:800; letter-spacing:0.18em; text-transform:uppercase; color:var(--teal); padding-bottom:0.5rem; border-bottom:2px solid var(--teal-bg); display:flex; align-items:center; gap:0.4rem; margin-top:0.25rem; }
 
@@ -255,6 +290,18 @@
     .preview-dot-err { width:6px;height:6px;border-radius:50%;background:var(--gold);flex-shrink:0; }
     .progress-bar-wrap { height: 3px; background: var(--gray-brd); }
     .progress-bar-fill { height: 100%; background: linear-gradient(90deg, var(--teal), var(--gold)); border-radius: 0; transition: width 0.4s cubic-bezier(0.16,1,0.3,1); }
+
+    /* ── LOCALIDADE BADGE ── */
+    .localidade-badge { display:flex; align-items:center; gap:0.6rem; margin-top:0.5rem;
+      padding:0.55rem 0.9rem; border-radius:8px; font-size:0.78rem; font-weight:600; }
+    .localidade-badge.zona-a { background:var(--teal-bg); border:1.5px solid var(--teal-brd); color:var(--teal); }
+    .localidade-badge.zona-b { background:#fff8e1; border:1.5px solid #ffe082; color:#6d4c00; }
+    .localidade-badge.zona-c { background:#fff3e0; border:1.5px solid #ffcc80; color:#7a3c00; }
+    .localidade-badge.zona-d { background:#fce4ec; border:1.5px solid #f48fb1; color:#880e4f; }
+    .localidade-badge.zona-e { background:#f3e5f5; border:1.5px solid #ce93d8; color:#4a148c; }
+    .localidade-badge .badge-pct { font-size:1.1rem; font-weight:800; }
+    .localidade-badge .badge-desc { font-size:0.72rem; opacity:0.8; }
+    .hidden { display:none !important; }
 
     /* ── FOOTER ── */
     .site-footer { background:var(--teal); border-top:3px solid var(--gold); padding:1.4rem 1.5rem; }
@@ -439,10 +486,7 @@
   <!-- ────── STEP 2: FORMULÁRIO ────── -->
   <div id="step-form" class="hidden">
     <!-- Alerta de tabela SEMED -->
-    <div id="alert-semed" class="alert alert-warn hidden">
-      <span>⚠️</span>
-      <div><strong>Tabela SEMED não configurada:</strong> Os valores da tabela salarial SEMED/AM ainda precisam ser inseridos no sistema. Acesse <em>Configurações → Gerenciar Tabelas</em> ou adicione diretamente no código-fonte do sistema. Preencha o formulário normalmente e os cálculos serão realizados quando os dados da tabela estiverem disponíveis.</div>
-    </div>
+    <div id="alert-semed" class="alert alert-warn hidden" style="display:none!important"></div>
 
     <div class="card">
       <div class="card-head">
@@ -499,12 +543,12 @@
                   <option value="">Selecione...</option>
                   <option value="A">A</option>
                   <option value="B">B</option>
-                  <option value="C1">C1</option>
-                  <option value="C2">C2</option>
+                  <option value="C">C</option>
                   <option value="D">D</option>
                   <option value="E">E</option>
                   <option value="F">F</option>
                   <option value="G">G</option>
+                  <option value="H">H</option>
                 </select>
                 <span class="field-hint">Referência atualmente constante na folha de pagamento</span>
               </div>
@@ -514,9 +558,12 @@
                   <option value="">Igual à Referência Atual</option>
                   <option value="A">A</option>
                   <option value="B">B</option>
-                  <option value="C1">C1</option>
-                  <option value="C2">C2</option>
+                  <option value="C">C</option>
                   <option value="D">D</option>
+                  <option value="E">E</option>
+                  <option value="F">F</option>
+                  <option value="G">G</option>
+                  <option value="H">H</option>
                 </select>
                 <span class="field-hint">Deixe em branco se igual à referência atual (caso padrão)</span>
               </div>
@@ -541,10 +588,90 @@
               <div class="field">
                 <label class="field-label">Incluir 13.º Salário e 1/3 Férias <span class="req">*</span></label>
                 <div class="radio-group" id="s-extras">
-                  <label class="radio-opt"><input type="radio" name="extras" value="sim" checked /><span>Sim — incluir reflexos</span></label>
-                  <label class="radio-opt"><input type="radio" name="extras" value="nao" /><span>Não — somente salário base</span></label>
+                  <label class="radio-opt">
+                    <input type="radio" name="extras" value="sim" checked />
+                    <span class="radio-opt-label"><span class="radio-dot"></span>Sim — incluir reflexos</span>
+                  </label>
+                  <label class="radio-opt">
+                    <input type="radio" name="extras" value="nao" />
+                    <span class="radio-opt-label"><span class="radio-dot"></span>Não — somente salário base</span>
+                  </label>
                 </div>
                 <span class="field-hint">STJ Tema 1075 — os extras são devidos sobre a diferença</span>
+              </div>
+
+              <div class="field">
+                <label class="field-label">Regência de Classe (professor em sala) <span class="req">*</span></label>
+                <div class="radio-group" id="s-regencia-group">
+                  <label class="radio-opt">
+                    <input type="radio" name="regencia" value="sim" checked />
+                    <span class="radio-opt-label"><span class="radio-dot"></span>Sim — +25% sobre o vencimento</span>
+                  </label>
+                  <label class="radio-opt">
+                    <input type="radio" name="regencia" value="nao" />
+                    <span class="radio-opt-label"><span class="radio-dot"></span>Não — sem adicional de regência</span>
+                  </label>
+                </div>
+                <span class="field-hint">Gratificação de Regência: 25% para professores em efetivo exercício em sala de aula</span>
+              </div>
+
+              <div class="field full">
+                <label class="field-label">Município de Lotação <span class="req">*</span></label>
+                <select id="s-municipio" onchange="atualizarBadgeLocalidade()">
+                  <option value="">Selecione o município...</option>
+                  <optgroup label="Zona A — Capital (0%)">
+                    <option value="Manaus|0">Manaus</option>
+                  </optgroup>
+                  <optgroup label="Zona B — Próximos (10–15%)">
+                    <option value="Iranduba|0.10">Iranduba</option>
+                    <option value="Rio Preto da Eva|0.10">Rio Preto da Eva</option>
+                    <option value="Manacapuru|0.10">Manacapuru</option>
+                    <option value="Itacoatiara|0.10">Itacoatiara</option>
+                    <option value="Careiro da Varzea|0.10">Careiro da Várzea</option>
+                    <option value="Presidente Figueiredo|0.15">Presidente Figueiredo</option>
+                    <option value="Novo Airao|0.15">Novo Airão</option>
+                  </optgroup>
+                  <optgroup label="Zona C — Médios (20–25%)">
+                    <option value="Parintins|0.20">Parintins</option>
+                    <option value="Maues|0.20">Maués</option>
+                    <option value="Itapiranga|0.20">Itapiranga</option>
+                    <option value="Silves|0.20">Silves</option>
+                    <option value="Urucurituba|0.20">Urucurituba</option>
+                    <option value="Boa Vista do Ramos|0.20">Boa Vista do Ramos</option>
+                    <option value="Coari|0.25">Coari</option>
+                    <option value="Tefe|0.25">Tefé</option>
+                    <option value="Anori|0.25">Anori</option>
+                    <option value="Anama|0.25">Anamã</option>
+                    <option value="Codajas|0.25">Codajás</option>
+                    <option value="Caapiranga|0.25">Caapiranga</option>
+                  </optgroup>
+                  <optgroup label="Zona D — Distantes (50%)">
+                    <option value="Humaita|0.50">Humaitá</option>
+                    <option value="Manicore|0.50">Manicoré</option>
+                    <option value="Labrea|0.50">Lábrea</option>
+                    <option value="Boca do Acre|0.50">Boca do Acre</option>
+                    <option value="Canutama|0.50">Canutama</option>
+                    <option value="Tapaua|0.50">Tapauá</option>
+                    <option value="Tabatinga|0.50">Tabatinga</option>
+                    <option value="Benjamin Constant|0.50">Benjamin Constant</option>
+                    <option value="Sao Paulo de Olivenca|0.50">São Paulo de Olivença</option>
+                    <option value="Santo Antonio do Ica|0.50">Santo Antônio do Içá</option>
+                  </optgroup>
+                  <optgroup label="Zona E — Extremo (80–100%)">
+                    <option value="Sao Gabriel da Cachoeira|0.80">São Gabriel da Cachoeira</option>
+                    <option value="Santa Isabel do Rio Negro|0.80">Santa Isabel do Rio Negro</option>
+                    <option value="Barcelos|0.80">Barcelos</option>
+                    <option value="Eirunepe|0.80">Eirunepé</option>
+                    <option value="Envira|1.00">Envira</option>
+                    <option value="Ipixuna|1.00">Ipixuna</option>
+                    <option value="Itamarati|1.00">Itamarati</option>
+                    <option value="Guajara|1.00">Guajará</option>
+                    <option value="Atalaia do Norte|1.00">Atalaia do Norte</option>
+                    <option value="Japura|1.00">Japurá</option>
+                  </optgroup>
+                </select>
+                <div id="localidade-badge" class="localidade-badge hidden"></div>
+                <span class="field-hint">Gratificação de Localidade — SEDUC/AM. Incide sobre o vencimento base conforme zona geográfica.</span>
               </div>
             </div>
           </div>
@@ -619,8 +746,14 @@
               <div class="field">
                 <label class="field-label">Incluir 13.º Salário e 1/3 Férias <span class="req">*</span></label>
                 <div class="radio-group" id="m-extras">
-                  <label class="radio-opt"><input type="radio" name="extras_m" value="sim" checked /><span>Sim — incluir reflexos</span></label>
-                  <label class="radio-opt"><input type="radio" name="extras_m" value="nao" /><span>Não — somente salário base</span></label>
+                  <label class="radio-opt">
+                    <input type="radio" name="extras_m" value="sim" checked />
+                    <span class="radio-opt-label"><span class="radio-dot"></span>Sim — incluir reflexos</span>
+                  </label>
+                  <label class="radio-opt">
+                    <input type="radio" name="extras_m" value="nao" />
+                    <span class="radio-opt-label"><span class="radio-dot"></span>Não — somente salário base</span>
+                  </label>
                 </div>
               </div>
             </div>
@@ -748,7 +881,7 @@
         <div style="font-size:0.62rem;color:rgba(255,255,255,0.4);">Direito Administrativo · Manaus – AM</div>
       </div>
     </div>
-    <div class="footer-copy">Lei n.º 3.951/2013 | Lei n.º 4.836/2019 | STJ Tema 1075<br>© 2025 Luis Albert Advocacia — Uso Institucional</div>
+    <div class="footer-copy">Lei n.º 3.951/2013 | Lei n.º 4.836/2019 | STJ Tema 1075<br>© 2026 Luis Albert Advocacia — Uso Institucional<br><span style="font-size:0.55rem;opacity:0.5;">Criado por Maria Lúcia Carvalho Grana</span></div>
   </div>
 </footer>
 
@@ -790,56 +923,94 @@
 // LAADV — Sistema de Cálculo Administrativo
 // Progressão Horizontal SEDUC/SEMED — Manaus/AM
 // Fundamento: Lei n.3951/2013 | Lei n.4836/2019 | STJ T.1075
+// SEMED: Lei 1.126/07 (PCCR) e atualizações
 // =============================================================
 
 // ─────────────────────────────────────────
-// 1. TABELAS SALARIAIS
+// 1. BASE DE DADOS SALARIAL
 // ─────────────────────────────────────────
 
-// SEDUC — Rede Estadual
-// Atualizar conforme legislação vigente
-const TABELA_SEDUC = [
-  // CLASSE 3ª — REFERÊNCIA A
-  {v:'2020-01-01',cl:'3ª',ref:'A',sal:2435.73,lei:'VALOR BASE VIGENTE'},
-  {v:'2021-01-01',cl:'3ª',ref:'A',sal:2435.73,lei:'SEM ALTERAÇÃO'},
-  {v:'2022-01-01',cl:'3ª',ref:'A',sal:2659.57,lei:'LEI N.º 5.770, DE 10 DE JANEIRO DE 2022 (9,19%)'},
-  {v:'2023-03-01',cl:'3ª',ref:'A',sal:2872.34,lei:'LEI N.º 6.261, DE 20 DE JUNHO DE 2023 (8,0%)'},
-  {v:'2024-03-01',cl:'3ª',ref:'A',sal:3001.60,lei:'LEI N.º 7.014, DE 19 DE AGOSTO DE 2024 (4,5%)'},
-  {v:'2025-03-01',cl:'3ª',ref:'A',sal:3001.60,lei:'LEI N.º 7.014, DE 19 DE AGOSTO DE 2024 (4,5%)'},
-  // CLASSE 3ª — REFERÊNCIA B
-  {v:'2020-01-01',cl:'3ª',ref:'B',sal:2484.44,lei:'VALOR BASE VIGENTE'},
-  {v:'2021-01-01',cl:'3ª',ref:'B',sal:2484.44,lei:'SEM ALTERAÇÃO'},
-  {v:'2022-01-01',cl:'3ª',ref:'B',sal:2712.73,lei:'LEI N.º 5.770, DE 10 DE JANEIRO DE 2022 (9,19%)'},
-  {v:'2023-03-01',cl:'3ª',ref:'B',sal:2929.75,lei:'LEI N.º 6.261, DE 20 DE JUNHO DE 2023 (8,0%)'},
-  {v:'2024-03-01',cl:'3ª',ref:'B',sal:3061.59,lei:'LEI N.º 7.014, DE 19 DE AGOSTO DE 2024 (4,5%)'},
-  {v:'2025-03-01',cl:'3ª',ref:'B',sal:3061.59,lei:'LEI N.º 7.014, DE 19 DE AGOSTO DE 2024 (4,5%)'},
-  // Adicione aqui: C1, C2, D, E, F, G, H1 para classe 3ª
-  // Adicione aqui: todas as referências para classes 2ª, 1ª, 4ª
-];
+// Tabela de vigências — valor base da referência-piso de cada carreira
+// SEDUC: base = 3ª Classe / Ref. A
+// SEMED: base = Ref. A1 (Nível Superior L15)
+const TABELAS_SALARIAIS = {
+  SEDUC: [
+    { vigencia: '2019-01-01', valorBase: 2320.10, lei: 'Lei n.º 3.951/2013' },
+    { vigencia: '2020-01-01', valorBase: 2435.73, lei: 'Reajuste 4,73% (Data-base 2019)' },
+    { vigencia: '2022-01-01', valorBase: 2659.57, lei: 'Lei n.º 5.770/2022 (9,19%)' },
+    { vigencia: '2023-03-01', valorBase: 2872.34, lei: 'Lei n.º 6.261/2023 (8,0%)' },
+    { vigencia: '2024-05-01', valorBase: 2984.07, lei: 'Data-Base 2024 (3,89%)' },
+    { vigencia: '2025-11-11', valorBase: 3058.58, lei: 'Lei n.º 7.836/2025' },
+  ],
+  SEMED: [
+    { vigencia: '2019-01-01', valorBase: 1912.45, lei: 'PCCR — Lei Municipal n.º 1.126/2007' },
+    { vigencia: '2022-04-01', valorBase: 2404.94, lei: 'Lei Municipal n.º 2.871/2022 (12,47%)' },
+    { vigencia: '2023-05-01', valorBase: 2513.16, lei: 'Lei Municipal n.º 3.056/2023 (4,5%)' },
+    { vigencia: '2024-05-01', valorBase: 2605.14, lei: 'Lei Municipal n.º 3.315/2024 (3,66%)' },
+    { vigencia: '2025-06-17', valorBase: 2650.29, lei: 'Data-Base 2025 (5,48%)' },
+  ],
+};
 
-// SEMED — Rede Municipal
-// ATENÇÃO: Preencha os valores conforme a tabela oficial vigente
-// Base: Lei n.4.852/19 | Lei n.5.771/22 | Lei n.908/23 | Lei n.7.014/24
-const TABELA_SEMED = [
-  // {v:'AAAA-MM-DD', ref:'A1', sal:0.00, lei:'Lei xx'},
-  // Exemplo:
-  // {v:'2020-01-01',ref:'A1',sal:2000.00,lei:'VALOR BASE VIGENTE'},
-  // {v:'2020-01-01',ref:'A2',sal:2100.00,lei:'VALOR BASE VIGENTE'},
-  // ...complete conforme tabela oficial
-];
+// Regras de negócio por área
+const REGRAS = {
+  SEDUC: {
+    // Multiplicador por classe sobre o valorBase (3ª = base)
+    classes: { '1ª': 1.25, '2ª': 1.10, '3ª': 1.00 },
+    // Multiplicador por referência sobre o valorBase da classe
+    // Progressão horizontal: +2% por letra
+    referencias: ['A','B','C','D','E','F','G','H'],
+    multRefs: { A:1.000, B:1.020, C:1.040, D:1.060, E:1.080, F:1.100, G:1.120, H:1.140 },
+    intersticioAntigo: 48, // meses — antes de 01/03/2019 (Lei 3.951/2013)
+    intersticioNovo:   36, // meses — após 01/03/2019 (Lei 4.836/2019)
+    marco: new Date('2019-03-01'),
+  },
+  SEMED: {
+    // Multiplicadores sobre A1 (base = 1.000)
+    // Entre números (ex: A1→A2): +2%
+    // Entre letras  (ex: A2→B1): +15%  (A2=1.02 → B1=1.150 = A1*1.15)
+    referencias: ['A1','A2','B1','B2','C1','C2','D1','D2'],
+    multRefs: {
+      A1: 1.000, A2: 1.020,
+      B1: 1.150, B2: 1.173,
+      C1: 1.322, C2: 1.349,
+      D1: 1.520, D2: 1.551,
+    },
+    intersticioUnico: 24, // meses — sempre 2 anos (Lei 1.126/07, sem marco)
+  },
+};
 
-// Progressão SEDUC: A → B → C1 → C2 → D → E → F → G → H1
-const REFS_SEDUC = ['A','B','C1','C2','D','E','F','G','H1'];
-// Progressão SEMED: A1 → A2 → B1 → B2 → C1 → C2 → D1 → D2
-const REFS_SEMED = ['A1','A2','B1','B2','C1','C2','D1','D2'];
-
-const MARCO_2019 = new Date('2019-03-01');
-const INTERSTICO_ANTIGO = 48; // meses (Lei 3.951/2013)
-const INTERSTICO_NOVO   = 36; // meses (Lei 4.836/2019)
-
-// Estado global do cálculo
+// Estado global
 let AREA_ATUAL = null;
 let RESULTADO  = null;
+
+// Alias para compatibilidade com a validação do formulário
+const REFS_SEDUC = REGRAS.SEDUC.referencias;
+const REFS_SEMED = REGRAS.SEMED.referencias;
+
+// ─────────────────────────────────────────
+// LOCALIDADES SEDUC/AM — Gratificação de Localidade
+// Fonte: SEDUC/AM — Decreto Estadual
+// ─────────────────────────────────────────
+const LOCALIDADES_AM = {
+  'Manaus': 0.00,
+  'Iranduba': 0.10, 'Rio Preto da Eva': 0.10, 'Manacapuru': 0.10,
+  'Itacoatiara': 0.10, 'Careiro da Varzea': 0.10,
+  'Presidente Figueiredo': 0.15, 'Novo Airao': 0.15,
+  'Parintins': 0.20, 'Maues': 0.20, 'Itapiranga': 0.20,
+  'Silves': 0.20, 'Urucurituba': 0.20, 'Boa Vista do Ramos': 0.20,
+  'Coari': 0.25, 'Tefe': 0.25, 'Anori': 0.25, 'Anama': 0.25,
+  'Codajas': 0.25, 'Caapiranga': 0.25,
+  'Humaita': 0.50, 'Manicore': 0.50, 'Labrea': 0.50,
+  'Boca do Acre': 0.50, 'Canutama': 0.50, 'Tapaua': 0.50,
+  'Tabatinga': 0.50, 'Benjamin Constant': 0.50,
+  'Sao Paulo de Olivenca': 0.50, 'Santo Antonio do Ica': 0.50,
+  'Sao Gabriel da Cachoeira': 0.80, 'Santa Isabel do Rio Negro': 0.80,
+  'Barcelos': 0.80, 'Eirunepe': 0.80,
+  'Envira': 1.00, 'Ipixuna': 1.00, 'Itamarati': 1.00,
+  'Guajara': 1.00, 'Atalaia do Norte': 1.00, 'Japura': 1.00,
+};
+
+const REGENCIA_PERCENTUAL = 0.25; // 25% — Gratificação de Regência de Classe
 
 // ─────────────────────────────────────────
 // 2. UTILITÁRIOS DE DATA / MOEDA
@@ -879,15 +1050,72 @@ function fmtNum(v) {
 }
 
 // ─────────────────────────────────────────
-// 3. MOTOR DE PROGRESSÃO
+// 3. MOTOR DE CÁLCULO SALARIAL
 // ─────────────────────────────────────────
 
-// Calcula quantas progressões houve desde a posse até uma data
-function calcularProgressoes(posseDate, ateDate) {
+/**
+ * Retorna o valorBase vigente para uma área e data de referência.
+ * Busca a última vigência cujo início seja <= mesStr.
+ */
+function getValorBase(area, dataRef) {
+  const tabela = TABELAS_SALARIAIS[area.toUpperCase()];
+  const mesStr = dataRef.getFullYear() + '-' +
+    String(dataRef.getMonth()+1).padStart(2,'0') + '-01';
+  // Ordena descendente e pega a primeira que couber
+  const sorted = [...tabela].sort((a,b) => b.vigencia.localeCompare(a.vigencia));
+  const found = sorted.find(r => r.vigencia <= mesStr);
+  return found || null;
+}
+
+/**
+ * Calcula o vencimento bruto de um servidor dado área, classe, referência e mês.
+ * Retorna { sal, salBase, salLocalidade, salRegencia, lei } ou null.
+ *
+ * Fórmula SEDUC: sal = base * multClasse * multRef * (1 + pctLocalidade + pctRegencia)
+ * Fórmula SEMED: sal = base * multRef  (sem classes, sem localidade, sem regência)
+ */
+function calcVencimento(area, classe, ref, dataRef, pctLocalidade = 0, pctRegencia = 0) {
+  const areaCfg = REGRAS[area.toUpperCase()];
+  const baseItem = getValorBase(area, dataRef);
+  if (!baseItem) return null;
+
+  let salBase;
+  if (area.toUpperCase() === 'SEDUC') {
+    const multClasse = areaCfg.classes[classe] ?? 1.00;
+    const multRef    = areaCfg.multRefs[ref]   ?? 1.00;
+    salBase = baseItem.valorBase * multClasse * multRef;
+  } else {
+    const multRef = areaCfg.multRefs[ref] ?? 1.00;
+    salBase = baseItem.valorBase * multRef;
+    // SEMED não aplica localidade nem regência
+    pctLocalidade = 0;
+    pctRegencia   = 0;
+  }
+
+  const salLocalidade = parseFloat((salBase * pctLocalidade).toFixed(2));
+  const salRegencia   = parseFloat((salBase * pctRegencia).toFixed(2));
+  const sal           = parseFloat((salBase + salLocalidade + salRegencia).toFixed(2));
+
+  return { sal, salBase: parseFloat(salBase.toFixed(2)), salLocalidade, salRegencia, lei: baseItem.lei };
+}
+
+/**
+ * Conta quantas progressões horizontais ocorreram desde a posse até uma data.
+ * SEDUC: interstício variável com marco em 01/03/2019.
+ * SEMED: interstício fixo de 24 meses.
+ */
+function calcularProgressoes(area, posseDate, ateDate) {
+  const cfg = REGRAS[area.toUpperCase()];
   let progCount = 0;
   let cursor = new Date(posseDate);
+
   while (true) {
-    const meses = cursor < MARCO_2019 ? INTERSTICO_ANTIGO : INTERSTICO_NOVO;
+    let meses;
+    if (area.toUpperCase() === 'SEDUC') {
+      meses = cursor < cfg.marco ? cfg.intersticioAntigo : cfg.intersticioNovo;
+    } else {
+      meses = cfg.intersticioUnico;
+    }
     const proxima = addMonths(cursor, meses);
     if (proxima > ateDate) break;
     progCount++;
@@ -896,35 +1124,14 @@ function calcularProgressoes(posseDate, ateDate) {
   return progCount;
 }
 
-// Retorna a referência devida dado ref inicial + n progressões
+/**
+ * Retorna a referência a que o servidor tem direito após N progressões.
+ * Respeita o teto máximo da carreira.
+ */
 function refAposProgressoes(refInicial, refList, n) {
   const idx = refList.indexOf(refInicial);
   if (idx < 0) return refInicial;
-  const maxIdx = refList.length - 1;
-  return refList[Math.min(idx + n, maxIdx)];
-}
-
-// Retorna o vencimento para uma classe, ref e data (mês de referência)
-function getVencimento(tabela, classe, ref, dataReferencia) {
-  // Filtra por classe (se aplicável) e ref, ordena por vigência desc
-  let candidatos;
-  if (classe) {
-    candidatos = tabela.filter(r => r.cl === classe && r.ref === ref);
-  } else {
-    candidatos = tabela.filter(r => r.ref === ref);
-  }
-  if (!candidatos.length) return null;
-  // Sort descending by vigência
-  candidatos.sort((a,b) => b.v.localeCompare(a.v));
-  // Primeiro cuja vigência <= dataReferencia (aaaa-mm-01)
-  const mesStr = dataReferencia.getFullYear() + '-' + String(dataReferencia.getMonth()+1).padStart(2,'0') + '-01';
-  const found = candidatos.find(r => r.v <= mesStr);
-  return found ? found : null;
-}
-
-function getLeiVigente(tabela, classe, ref, dataReferencia) {
-  const r = getVencimento(tabela, classe, ref, dataReferencia);
-  return r ? r.lei : '—';
+  return refList[Math.min(idx + n, refList.length - 1)];
 }
 
 // ─────────────────────────────────────────
@@ -932,111 +1139,98 @@ function getLeiVigente(tabela, classe, ref, dataReferencia) {
 // ─────────────────────────────────────────
 
 function gerarDemonstrativo(params) {
-  const {area, nome, matricula, cargo, posseDate, classe, refInicial, startDate, endDate, incluirExtras} = params;
-  const tabela = area === 'seduc' ? TABELA_SEDUC : TABELA_SEMED;
-  const refList = area === 'seduc' ? REFS_SEDUC : REFS_SEMED;
+  const { area, nome, matricula, cargo, posseDate, classe,
+          refInicial, startDate, endDate, incluirExtras,
+          municipio, pctLocalidade, incluirRegencia } = params;
+  const areaUp  = area.toUpperCase();
+  const refList = REGRAS[areaUp].referencias;
+  const pctReg  = (area === 'seduc' && incluirRegencia) ? REGENCIA_PERCENTUAL : 0;
+  const pctLoc  = (area === 'seduc') ? (pctLocalidade || 0) : 0;
 
-  // Calcular ref devida no final do período
-  const progsAteInicio = calcularProgressoes(posseDate, endDate);
-  const refDevida = refAposProgressoes(refInicial, refList, progsAteInicio);
-  const idxInicial = refList.indexOf(refInicial);
-  const idxDevida = refList.indexOf(refDevida);
-  const numProgressoesAtraso = idxDevida - idxInicial;
+  // Referência devida ao fim do período (para o resumo)
+  const progsTotal = calcularProgressoes(area, posseDate, endDate);
+  const refDevida  = refAposProgressoes(refInicial, refList, progsTotal);
+  const numProgressoesAtraso = refList.indexOf(refDevida) - refList.indexOf(refInicial);
 
-  const rows = [];
+  const rows  = [];
   const erros = [];
 
-  // Iterar mês a mês
+  // Iteração mês a mês
   let cursor = new Date(startDate.getFullYear(), startDate.getMonth(), 1);
   const endM = new Date(endDate.getFullYear(), endDate.getMonth(), 1);
 
   while (cursor <= endM) {
-    // Qual ref devida neste mês?
-    const progsAteMes = calcularProgressoes(posseDate, cursor);
+    const progsAteMes  = calcularProgressoes(area, posseDate, cursor);
     const refDevidaMes = refAposProgressoes(refInicial, refList, progsAteMes);
 
-    if (refDevidaMes === refInicial) {
-      cursor = addMonths(cursor, 1);
-      continue; // Sem diferença ainda
-    }
+    if (refDevidaMes === refInicial) { cursor = addMonths(cursor, 1); continue; }
 
-    // Buscar salários
-    const recItem = getVencimento(tabela, classe, refInicial, cursor);
-    const devItem = getVencimento(tabela, classe, refDevidaMes, cursor);
+    const recItem = calcVencimento(area, classe, refInicial,   cursor, pctLoc, pctReg);
+    const devItem = calcVencimento(area, classe, refDevidaMes, cursor, pctLoc, pctReg);
 
-    if (!recItem) { erros.push(`Dado não encontrado: ${classe} Ref. ${refInicial} (${fmtMes(cursor)})`); cursor = addMonths(cursor,1); continue; }
-    if (!devItem) { erros.push(`Dado não encontrado: ${classe} Ref. ${refDevidaMes} (${fmtMes(cursor)})`); cursor = addMonths(cursor,1); continue; }
+    if (!recItem) { erros.push(`Vigência não encontrada: ${fmtMes(cursor)}`); cursor = addMonths(cursor,1); continue; }
+    if (!devItem) { erros.push(`Vigência não encontrada: ${fmtMes(cursor)}`); cursor = addMonths(cursor,1); continue; }
 
-    const diff = devItem.sal - recItem.sal;
-    if (diff < 0) { cursor = addMonths(cursor,1); continue; }
+    const diff = parseFloat((devItem.sal - recItem.sal).toFixed(2));
+    if (diff <= 0) { cursor = addMonths(cursor, 1); continue; }
 
     rows.push({
-      competencia: fmtMes(cursor),
-      refRecebida: refInicial,
+      competencia:  fmtMes(cursor),
+      refRecebida:  refInicial,
       vencRecebido: recItem.sal,
-      refDevida: refDevidaMes,
-      vencDevido: devItem.sal,
-      lei: devItem.lei,
-      diffMensal: diff,
-      extras: 0,
-      totalLinha: diff,
-      tipo: 'normal',
-      ano: cursor.getFullYear(),
-      mes: cursor.getMonth()
+      vencBaseRec:  recItem.salBase,
+      refDevida:    refDevidaMes,
+      vencDevido:   devItem.sal,
+      vencBaseDev:  devItem.salBase,
+      lei:          devItem.lei,
+      diffMensal:   diff,
+      extras:       0,
+      totalLinha:   diff,
+      tipo:         'normal',
+      ano:          cursor.getFullYear(),
+      mes:          cursor.getMonth(),
     });
 
     cursor = addMonths(cursor, 1);
   }
 
-  // Inserir 13º e Férias por ano
+  // Reflexos de 13º Salário e 1/3 de Férias (STJ Tema 1075)
   if (incluirExtras && rows.length > 0) {
     const anos = [...new Set(rows.map(r => r.ano))].sort();
     const extrasRows = [];
 
     anos.forEach(ano => {
-      // Dec do ano (ou último mês do ano no período)
-      const decDate = new Date(ano, 11, 1); // Dezembro
-      const ultimoMesAno = new Date(Math.min(endM, decDate));
-      // Usar vigência de dezembro para o 13°
-      const refDevidaDez = refAposProgressoes(refInicial, refList, calcularProgressoes(posseDate, decDate));
-      const recDez = getVencimento(tabela, classe, refInicial, decDate);
-      const devDez = getVencimento(tabela, classe, refDevidaDez, decDate);
-      if (!recDez || !devDez) return;
-      const diffDez = devDez.sal - recDez.sal;
-      if (diffDez <= 0 || refDevidaDez === refInicial) return;
+      const decDate      = new Date(ano, 11, 1);
+      const progsAteDez  = calcularProgressoes(area, posseDate, decDate);
+      const refDevidaDez = refAposProgressoes(refInicial, refList, progsAteDez);
+      if (refDevidaDez === refInicial) return;
 
-      // 13° salário
+      const recDez = calcVencimento(area, classe, refInicial,   decDate, pctLoc, pctReg);
+      const devDez = calcVencimento(area, classe, refDevidaDez, decDate, pctLoc, pctReg);
+      if (!recDez || !devDez) return;
+
+      const diffDez = parseFloat((devDez.sal - recDez.sal).toFixed(2));
+      if (diffDez <= 0) return;
+
       extrasRows.push({
-        competencia: '13º SAL. ' + ano,
-        refRecebida: refInicial,
-        vencRecebido: recDez.sal,
-        refDevida: refDevidaDez,
-        vencDevido: devDez.sal,
-        lei: devDez.lei,
-        diffMensal: diffDez,
-        extras: diffDez,
-        totalLinha: diffDez * 2,
-        tipo: '13o',
-        ano, mes: 13
+        competencia: '13º SAL. ' + ano, refRecebida: refInicial,
+        vencRecebido: recDez.sal, refDevida: refDevidaDez, vencDevido: devDez.sal,
+        lei: devDez.lei, diffMensal: diffDez, extras: diffDez,
+        totalLinha: parseFloat((diffDez * 2).toFixed(2)),
+        tipo: '13o', ano, mes: 13,
       });
 
-      // 1/3 Férias
+      const diffFerias = parseFloat((diffDez / 3).toFixed(2));
       extrasRows.push({
-        competencia: '1/3 FÉRIAS ' + ano,
-        refRecebida: refInicial,
-        vencRecebido: parseFloat((recDez.sal / 3).toFixed(4)),
-        vencDevido: parseFloat((devDez.sal / 3).toFixed(4)),
-        refDevida: refDevidaDez,
-        lei: devDez.lei,
-        diffMensal: parseFloat((diffDez / 3).toFixed(4)),
-        extras: 0,
-        totalLinha: parseFloat((diffDez / 3).toFixed(4)),
-        tipo: 'ferias',
-        ano, mes: 14
+        competencia: '1/3 FÉRIAS ' + ano, refRecebida: refInicial,
+        vencRecebido: parseFloat((recDez.sal / 3).toFixed(2)),
+        vencDevido:   parseFloat((devDez.sal / 3).toFixed(2)),
+        refDevida: refDevidaDez, lei: devDez.lei,
+        diffMensal: diffFerias, extras: 0, totalLinha: diffFerias,
+        tipo: 'ferias', ano, mes: 14,
       });
     });
 
-    // Inserir após o último mês de cada ano
     extrasRows.forEach(er => {
       const afterIdx = rows.reduce((best, r, i) => r.ano === er.ano ? i : best, -1);
       if (afterIdx >= 0) rows.splice(afterIdx + 1, 0, er);
@@ -1044,9 +1238,17 @@ function gerarDemonstrativo(params) {
     });
   }
 
-  // Total
-  const totalDiff = rows.reduce((s, r) => s + r.diffMensal, 0);
-  const nMeses = rows.filter(r => r.tipo === 'normal').length;
+  const totalDiff = parseFloat(rows.reduce((s, r) => s + r.diffMensal, 0).toFixed(2));
+  const nMeses    = rows.filter(r => r.tipo === 'normal').length;
+
+  return {
+    rows, erros, totalDiff, nMeses, numProgressoesAtraso,
+    refInicial, refDevida, area, nome, matricula, cargo, classe,
+    posseDate, startDate, endDate, incluirExtras,
+    municipio, pctLocalidade: pctLoc, incluirRegencia,
+    dataCalculo: new Date(),
+  };
+}
 
   return {
     rows, erros, totalDiff, nMeses, numProgressoesAtraso,
@@ -1072,7 +1274,7 @@ function selecionarArea(area) {
   // Show/hide forms
   document.getElementById('form-seduc').classList.toggle('hidden', area !== 'seduc');
   document.getElementById('form-semed').classList.toggle('hidden', area !== 'semed');
-  document.getElementById('alert-semed').classList.toggle('hidden', area !== 'semed' || TABELA_SEMED.length > 0);
+  document.getElementById('alert-semed').classList.toggle('hidden', area !== 'semed');
 
   // Update form header
   const icons = {seduc:'📚', semed:'🏫'};
@@ -1146,6 +1348,37 @@ function limparFormulario() {
 // 6. VALIDAÇÃO E EXECUÇÃO DO CÁLCULO
 // ─────────────────────────────────────────
 
+// ─────────────────────────────────────────
+// BADGE DE LOCALIDADE
+// ─────────────────────────────────────────
+function atualizarBadgeLocalidade() {
+  const sel    = document.getElementById('s-municipio');
+  const badge  = document.getElementById('localidade-badge');
+  if (!sel || !badge) return;
+
+  const val = sel.value;
+  if (!val) { badge.className = 'localidade-badge hidden'; return; }
+
+  const [munNome, pctStr] = val.split('|');
+  const pct = parseFloat(pctStr) || 0;
+  const pctLabel = pct === 0 ? '0%' : '+' + Math.round(pct * 100) + '%';
+
+  let zona, zonaCls, desc;
+  if (pct === 0)       { zona = 'Zona A'; zonaCls = 'zona-a'; desc = 'Capital — sem gratificação'; }
+  else if (pct <= 0.15){ zona = 'Zona B'; zonaCls = 'zona-b'; desc = 'Municípios próximos'; }
+  else if (pct <= 0.25){ zona = 'Zona C'; zonaCls = 'zona-c'; desc = 'Municípios de médio acesso'; }
+  else if (pct <= 0.50){ zona = 'Zona D'; zonaCls = 'zona-d'; desc = 'Municípios distantes'; }
+  else                 { zona = 'Zona E'; zonaCls = 'zona-e'; desc = 'Municípios de difícil acesso'; }
+
+  badge.className = `localidade-badge ${zonaCls}`;
+  badge.innerHTML = `
+    <span class="badge-pct">${pctLabel}</span>
+    <div>
+      <div><strong>${munNome}</strong> — ${zona}</div>
+      <div class="badge-desc">${desc} · Gratificação incide sobre vencimento base + referência</div>
+    </div>`;
+}
+
 function calcular() {
   const errEl = document.getElementById('alert-form-error');
   errEl.classList.add('hidden');
@@ -1204,6 +1437,18 @@ function coletarParametros() {
   const inicioStr = v('inicio');
   const fimStr    = v('fim');
   const extras    = r(area === 'seduc' ? 'extras' : 'extras_m') === 'sim';
+  const regencia  = area === 'seduc' ? (r('regencia') === 'sim') : false;
+
+  // Município / Localidade (somente SEDUC)
+  let municipio    = '';
+  let pctLocalidade = 0;
+  if (area === 'seduc') {
+    const munVal = document.getElementById('s-municipio')?.value;
+    if (!munVal) throw new Error('Selecione o município de lotação do servidor.');
+    const [munNome, munPct] = munVal.split('|');
+    municipio     = munNome;
+    pctLocalidade = parseFloat(munPct) || 0;
+  }
 
   // Validações
   if (!nome) throw new Error('Informe o nome completo do servidor.');
@@ -1230,7 +1475,8 @@ function coletarParametros() {
   if (idxIni < 0) throw new Error('Referência inválida: ' + refInicial);
   if (idxAtual < 0) throw new Error('Referência inválida: ' + refAtual);
 
-  return {area, nome, matricula, cargo, posseDate, classe, refInicial, startDate, endDate, incluirExtras: extras};
+  return {area, nome, matricula, cargo, posseDate, classe, refInicial, startDate, endDate,
+          incluirExtras: extras, municipio, pctLocalidade, incluirRegencia: regencia};
 }
 
 // ─────────────────────────────────────────
@@ -1239,20 +1485,26 @@ function coletarParametros() {
 
 function renderizarResultados(res) {
   const {rows, totalDiff, nMeses, numProgressoesAtraso, refInicial, refDevida,
-         nome, matricula, cargo, classe, area, posseDate, startDate, endDate} = res;
+         nome, matricula, cargo, classe, area, posseDate, startDate, endDate,
+         municipio, pctLocalidade, incluirRegencia} = res;
 
-  // Texto jurídico
-  const areaStr = area === 'seduc' ? 'SEDUC/AM (Rede Estadual)' : 'SEMED/AM (Rede Municipal)';
+  const areaStr  = area === 'seduc' ? 'SEDUC/AM (Rede Estadual)' : 'SEMED/AM (Rede Municipal)';
+  const munStr   = (area === 'seduc' && municipio) ? municipio : '';
+  const locStr   = (pctLocalidade > 0) ? ` | Localidade: +${(pctLocalidade*100).toFixed(0)}% (${munStr})` : (munStr ? ` | Localidade: Manaus (0%)` : '');
+  const regStr   = (area === 'seduc') ? ` | Regência: ${incluirRegencia ? '+25%' : 'não incluída'}` : '';
   const legalBase = area === 'seduc'
-    ? 'Lei n.º 3.951/2013 (interstício 4 anos) → Lei n.º 4.836/2019 (interstício 3 anos, marco: 01/03/2019) | STJ Tema 1075 | LC 101/2000, Art. 22, §único, I | Prescrição: Dec. Fed. n.º 20.910/1932 (5 anos)'
+    ? 'Lei n.º 3.951/2013 (interstício 4 anos) → Lei n.º 4.836/2019 (interstício 3 anos, marco: 01/03/2019) | STJ Tema 1075 | Prescrição: Dec. Fed. n.º 20.910/1932 (5 anos)'
     : 'Lei n.º 4.852/2019 | Lei n.º 5.771/2022 | Lei n.º 908/2023 | Lei n.º 7.014/2024 | STJ Tema 1075';
+
   document.getElementById('legal-text').innerHTML =
     `<strong>${areaStr}</strong> — Servidor: <strong>${nome}</strong> (${matricula}). ` +
     (classe ? `Classe: <strong>${classe}</strong>. ` : '') +
+    (munStr ? `Lotação: <strong>${munStr}</strong>. ` : '') +
     `Referência recebida: <strong>${refInicial}</strong> → Referência devida: <strong>${refDevida}</strong>. ` +
     `Progressões em atraso: <strong>${numProgressoesAtraso}</strong>. ` +
-    `Período analisado: <strong>${fmtData(startDate)}</strong> a <strong>${fmtData(endDate)}</strong>.<br>` +
-    `<em style="font-size:0.73rem;color:var(--teal-light);">${legalBase}</em>`;
+    `Período analisado: <strong>${fmtData(startDate)}</strong> a <strong>${fmtData(endDate)}</strong>.` +
+    (locStr || regStr ? `<br><span style="font-size:0.73rem;color:var(--gold-dark);">⚙️ Verbas aplicadas${locStr}${regStr}</span>` : '') +
+    `<br><em style="font-size:0.73rem;color:var(--teal-light);">${legalBase}</em>`;
 
   // Print doc info
   document.getElementById('print-doc-info').innerHTML =
@@ -1291,6 +1543,8 @@ function renderizarResultados(res) {
   document.getElementById('result-tags').innerHTML = `
     <span class="tag tag-teal">${area === 'seduc' ? '📚 SEDUC' : '🏫 SEMED'}</span>
     ${classe ? `<span class="tag tag-gold">Classe ${classe}</span>` : ''}
+    ${munStr ? `<span class="tag tag-gold">📍 ${munStr}${pctLocalidade > 0 ? ' +'+Math.round(pctLocalidade*100)+'%' : ''}</span>` : ''}
+    ${area === 'seduc' && incluirRegencia ? `<span class="tag tag-teal">🏫 Regência +25%</span>` : ''}
   `;
 
   // Tabela
