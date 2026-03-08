@@ -628,8 +628,13 @@
                     <option value="Manacapuru|0.10">Manacapuru</option>
                     <option value="Itacoatiara|0.10">Itacoatiara</option>
                     <option value="Careiro da Varzea|0.10">Careiro da Várzea</option>
+                    <option value="Careiro|0.10">Careiro</option>
+                    <option value="Autazes|0.10">Autazes</option>
+                    <option value="Manaquiri|0.10">Manaquiri</option>
                     <option value="Presidente Figueiredo|0.15">Presidente Figueiredo</option>
                     <option value="Novo Airao|0.15">Novo Airão</option>
+                    <option value="Sao Sebastiao do Uatuma|0.15">São Sebastião do Uatumã</option>
+                    <option value="Nova Olinda do Norte|0.15">Nova Olinda do Norte</option>
                   </optgroup>
                   <optgroup label="Zona C — Médios (20–25%)">
                     <option value="Parintins|0.20">Parintins</option>
@@ -638,12 +643,19 @@
                     <option value="Silves|0.20">Silves</option>
                     <option value="Urucurituba|0.20">Urucurituba</option>
                     <option value="Boa Vista do Ramos|0.20">Boa Vista do Ramos</option>
+                    <option value="Barreirinha|0.20">Barreirinha</option>
+                    <option value="Nhamunda|0.20">Nhamundá</option>
+                    <option value="Urucara|0.20">Urucará</option>
                     <option value="Coari|0.25">Coari</option>
                     <option value="Tefe|0.25">Tefé</option>
                     <option value="Anori|0.25">Anori</option>
                     <option value="Anama|0.25">Anamã</option>
                     <option value="Codajas|0.25">Codajás</option>
                     <option value="Caapiranga|0.25">Caapiranga</option>
+                    <option value="Beruri|0.25">Beruri</option>
+                    <option value="Uarini|0.25">Uarini</option>
+                    <option value="Alvaraes|0.25">Alvarães</option>
+                    <option value="Maraa|0.25">Maraã</option>
                   </optgroup>
                   <optgroup label="Zona D — Distantes (50%)">
                     <option value="Humaita|0.50">Humaitá</option>
@@ -656,6 +668,15 @@
                     <option value="Benjamin Constant|0.50">Benjamin Constant</option>
                     <option value="Sao Paulo de Olivenca|0.50">São Paulo de Olivença</option>
                     <option value="Santo Antonio do Ica|0.50">Santo Antônio do Içá</option>
+                    <option value="Jurua|0.50">Juruá</option>
+                    <option value="Fonte Boa|0.50">Fonte Boa</option>
+                    <option value="Jutai|0.50">Jutaí</option>
+                    <option value="Tonantins|0.50">Tonantins</option>
+                    <option value="Amatura|0.50">Amaturá</option>
+                    <option value="Apui|0.50">Apuí</option>
+                    <option value="Borba|0.50">Borba</option>
+                    <option value="Novo Aripuana|0.50">Novo Aripuanã</option>
+                    <option value="Pauini|0.50">Pauiní</option>
                   </optgroup>
                   <optgroup label="Zona E — Extremo (80–100%)">
                     <option value="Sao Gabriel da Cachoeira|0.80">São Gabriel da Cachoeira</option>
@@ -992,18 +1013,30 @@ const REFS_SEMED = REGRAS.SEMED.referencias;
 // Fonte: SEDUC/AM — Decreto Estadual
 // ─────────────────────────────────────────
 const LOCALIDADES_AM = {
+  // Zona A — Capital
   'Manaus': 0.00,
+  // Zona B — Próximos (10–15%)
   'Iranduba': 0.10, 'Rio Preto da Eva': 0.10, 'Manacapuru': 0.10,
-  'Itacoatiara': 0.10, 'Careiro da Varzea': 0.10,
+  'Itacoatiara': 0.10, 'Careiro da Varzea': 0.10, 'Careiro': 0.10,
+  'Autazes': 0.10, 'Manaquiri': 0.10,
   'Presidente Figueiredo': 0.15, 'Novo Airao': 0.15,
+  'Sao Sebastiao do Uatuma': 0.15, 'Nova Olinda do Norte': 0.15,
+  // Zona C — Médios (20–25%)
   'Parintins': 0.20, 'Maues': 0.20, 'Itapiranga': 0.20,
   'Silves': 0.20, 'Urucurituba': 0.20, 'Boa Vista do Ramos': 0.20,
+  'Barreirinha': 0.20, 'Nhamunda': 0.20, 'Urucara': 0.20,
   'Coari': 0.25, 'Tefe': 0.25, 'Anori': 0.25, 'Anama': 0.25,
-  'Codajas': 0.25, 'Caapiranga': 0.25,
+  'Codajas': 0.25, 'Caapiranga': 0.25, 'Beruri': 0.25,
+  'Uarini': 0.25, 'Alvaraes': 0.25, 'Maraa': 0.25,
+  // Zona D — Distantes (50%)
   'Humaita': 0.50, 'Manicore': 0.50, 'Labrea': 0.50,
   'Boca do Acre': 0.50, 'Canutama': 0.50, 'Tapaua': 0.50,
   'Tabatinga': 0.50, 'Benjamin Constant': 0.50,
   'Sao Paulo de Olivenca': 0.50, 'Santo Antonio do Ica': 0.50,
+  'Jurua': 0.50, 'Fonte Boa': 0.50, 'Jutai': 0.50,
+  'Tonantins': 0.50, 'Amatura': 0.50, 'Apui': 0.50,
+  'Borba': 0.50, 'Novo Aripuana': 0.50, 'Pauini': 0.50,
+  // Zona E — Extremo (80–100%)
   'Sao Gabriel da Cachoeira': 0.80, 'Santa Isabel do Rio Negro': 0.80,
   'Barcelos': 0.80, 'Eirunepe': 0.80,
   'Envira': 1.00, 'Ipixuna': 1.00, 'Itamarati': 1.00,
