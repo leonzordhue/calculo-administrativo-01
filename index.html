@@ -331,8 +331,9 @@
        PRINT / PDF STYLES
     ─────────────────────────────────────────── */
     @media print {
+      @page { size: A4 landscape; margin: 8mm 6mm; }
       * { -webkit-print-color-adjust:exact !important; print-color-adjust:exact !important; color-adjust:exact !important; }
-      body { background:#fff !important; font-size:11px; }
+      body { background:#fff !important; font-size:9px; }
       .topbar, .site-header, .hero, .hero-wave, .stepper, .btn-actions, .site-footer,
       .card-head .btn, .btn-settings, #step-selector, #step-form, .modal-overlay,
       #btn-nova-consulta, #btn-exportar, #btn-salvar { display:none !important; }
@@ -340,10 +341,24 @@
       .card { box-shadow:none !important; border:1px solid #ccc !important; margin-bottom:0.5rem !important; page-break-inside:avoid; }
       .card-head { background:#0B4A44 !important; }
       .card-title { color:#fff !important; }
-      .result-table { font-size:9px !important; min-width:0 !important; }
+      /* Tabela: table-layout fixed, sem overflow hidden, font menor */
+      .result-table { font-size:7px !important; min-width:0 !important; width:100% !important;
+                      table-layout:fixed !important; border-collapse:collapse !important; }
       .result-table thead tr { background:#0B4A44 !important; }
-      .result-table thead th { color:#fff !important; font-size:7px !important; padding:0.4rem 0.5rem !important; }
-      .result-table tbody td { padding:0.35rem 0.5rem !important; }
+      .result-table thead th { color:#fff !important; font-size:6px !important;
+        padding:0.28rem 0.22rem !important; word-break:break-word; white-space:normal; }
+      .result-table tbody td { padding:0.20rem 0.22rem !important;
+        word-break:break-word; overflow-wrap:break-word; white-space:normal; }
+      /* 9 colunas — soma = 100% — A4 landscape útil ~277mm (297mm - 2×10mm margin) */
+      .result-table th:nth-child(1), .result-table td:nth-child(1) { width:9% !important; }    /* Competência  ~25mm */
+      .result-table th:nth-child(2), .result-table td:nth-child(2) { width:5% !important; }    /* Ref. Rec.    ~14mm */
+      .result-table th:nth-child(3), .result-table td:nth-child(3) { width:11% !important; }   /* Venc. Rec.   ~30mm */
+      .result-table th:nth-child(4), .result-table td:nth-child(4) { width:5% !important; }    /* Ref. Dev.    ~14mm */
+      .result-table th:nth-child(5), .result-table td:nth-child(5) { width:11% !important; }   /* Venc. Dev.   ~30mm */
+      .result-table th:nth-child(6), .result-table td:nth-child(6) { width:26% !important; }   /* Lei          ~72mm */
+      .result-table th:nth-child(7), .result-table td:nth-child(7) { width:12% !important; }   /* Diferença    ~33mm */
+      .result-table th:nth-child(8), .result-table td:nth-child(8) { width:12% !important; }   /* 13°/Férias   ~33mm */
+      .result-table th:nth-child(9), .result-table td:nth-child(9) { width:9% !important; }    /* Total Linha  ~25mm */
       .result-table tbody tr.row-total { background:#0B4A44 !important; }
       .result-table tbody tr.row-total td { color:#fff !important; }
       .result-table-wrap { overflow:visible !important; border-radius:0 !important; }
@@ -1139,8 +1154,14 @@ function calcVencimento(area, classe, ref, dataRef, pctLocalidade = 0, pctRegenc
  */
 function calcularProgressoes(area, posseDate, ateDate) {
   const cfg = REGRAS[area.toUpperCase()];
+  // Normaliza ambas as datas para o 1º do mês.
+  // Isso evita overflow de dias no addMonths (ex: 31/jan + 1 mês não pode ser 03/mar).
+  // A progressão é contada quando o mês do interstício chega, independente do dia.
+  const ateMes = new Date(ateDate.getFullYear(), ateDate.getMonth(), 1);
+
   let progCount = 0;
-  let cursor = new Date(posseDate);
+  // Partir sempre do 1º do mês da posse — comparação por mês, não por dia exato
+  let cursor = new Date(posseDate.getFullYear(), posseDate.getMonth(), 1);
 
   while (true) {
     let meses;
@@ -1149,8 +1170,9 @@ function calcularProgressoes(area, posseDate, ateDate) {
     } else {
       meses = cfg.intersticioUnico;
     }
-    const proxima = addMonths(cursor, meses);
-    if (proxima > ateDate) break;
+    // new Date(ano, mes + n, 1) nunca estoura dias — garante aritmética mensal pura
+    const proxima = new Date(cursor.getFullYear(), cursor.getMonth() + meses, 1);
+    if (proxima > ateMes) break;
     progCount++;
     cursor = proxima;
   }
@@ -1631,8 +1653,8 @@ async function salvarSheets() {
   const statusEl = document.getElementById('save-status-label');
   btn.disabled = true;
   btn.textContent = '⏳ Salvando...';
+  statusEl.innerHTML = '';
 
-  // Serializar resultado para envio
   const payload = {
     area: RESULTADO.area,
     nome: RESULTADO.nome,
@@ -1641,6 +1663,9 @@ async function salvarSheets() {
     classe: RESULTADO.classe || '',
     refInicial: RESULTADO.refInicial,
     refDevida: RESULTADO.refDevida,
+    municipio: RESULTADO.municipio || '',
+    pctLocalidade: RESULTADO.pctLocalidade || 0,
+    incluirRegencia: RESULTADO.incluirRegencia || false,
     posseDate: RESULTADO.posseDate.toISOString().slice(0,10),
     startDate: RESULTADO.startDate.toISOString().slice(0,10),
     endDate: RESULTADO.endDate.toISOString().slice(0,10),
@@ -1651,33 +1676,67 @@ async function salvarSheets() {
     dataCalculo: new Date().toISOString().slice(0,10),
     advogado: localStorage.getItem('laadv_adv') || 'Luis Albert',
     rows: RESULTADO.rows.map(r => ({
-      competencia: r.competencia,
-      refRecebida: r.refRecebida,
-      vencRecebido: r.vencRecebido,
-      refDevida: r.refDevida,
-      vencDevido: r.vencDevido,
-      lei: r.lei,
-      diffMensal: r.diffMensal,
-      extras: r.extras,
-      totalLinha: r.totalLinha,
-      tipo: r.tipo
+      competencia: r.competencia, refRecebida: r.refRecebida,
+      vencRecebido: r.vencRecebido, refDevida: r.refDevida,
+      vencDevido: r.vencDevido, lei: r.lei,
+      diffMensal: r.diffMensal, extras: r.extras,
+      totalLinha: r.totalLinha, tipo: r.tipo
     }))
   };
 
   try {
     const resp = await fetch(url, {
       method: 'POST',
-      headers: {'Content-Type': 'text/plain'},
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
       body: JSON.stringify(payload)
     });
-    const data = await resp.json();
-    if (data.success) {
-      statusEl.innerHTML = '<span class="save-status ok">✓ Salvo no Google Sheets</span>';
+
+    // Lê o body UMA VEZ como texto — depois faz o parse
+    // (resp.json() + resp.text() em sequência consomem o stream e falham)
+    const rawText = await resp.text();
+
+    if (!resp.ok) {
+      throw new Error(`HTTP ${resp.status} — ${rawText.slice(0, 120)}`);
+    }
+
+    let data;
+    try {
+      data = JSON.parse(rawText);
+    } catch(_) {
+      throw new Error('Resposta do Apps Script não é JSON válido: ' + rawText.slice(0, 120));
+    }
+
+    if (data && data.success) {
+      const sheetUrl    = data.sheetUrl || '';
+      const planilhaUrl = data.spreadsheetUrl || sheetUrl;
+      const clientId    = data.clientId || '—';
+      let linkHtml = '';
+      if (sheetUrl) {
+        linkHtml = `<br><a href="${sheetUrl}" target="_blank"
+          style="display:inline-flex;align-items:center;gap:0.4rem;margin-top:0.4rem;
+                 padding:0.4em 0.9em;background:var(--teal);color:#fff;border-radius:7px;
+                 font-size:0.78rem;font-weight:700;text-decoration:none;">
+          🔗 Abrir aba do cliente no Google Sheets</a>`;
+      } else if (planilhaUrl) {
+        linkHtml = `<br><a href="${planilhaUrl}" target="_blank"
+          style="display:inline-flex;align-items:center;gap:0.4rem;margin-top:0.4rem;
+                 padding:0.4em 0.9em;background:var(--teal);color:#fff;border-radius:7px;
+                 font-size:0.78rem;font-weight:700;text-decoration:none;">
+          🔗 Abrir planilha no Google Sheets</a>`;
+      }
+      statusEl.innerHTML = `<span class="save-status ok">✓ Salvo com sucesso — ID: ${clientId}</span>${linkHtml}`;
     } else {
-      statusEl.innerHTML = `<span class="save-status fail">✕ Erro: ${data.error || 'desconhecido'}</span>`;
+      const msg = (data && data.error) ? data.error : 'Resposta inesperada do servidor';
+      statusEl.innerHTML = `<span class="save-status fail">✕ Erro do Apps Script: ${msg}</span>
+        <br><small style="color:var(--gray-mid)">Verifique se a URL está correta e se o Web App está implantado como "Qualquer pessoa".</small>`;
     }
   } catch(e) {
-    statusEl.innerHTML = '<span class="save-status fail">✕ Falha na conexão</span>';
+    const isNetwork = e.message.includes('Failed to fetch') || e.message.includes('NetworkError');
+    const dica = isNetwork
+      ? 'Erro de rede ou CORS. Verifique se a URL do Apps Script está correta e se o acesso está definido como "Qualquer pessoa".'
+      : e.message;
+    statusEl.innerHTML = `<span class="save-status fail">✕ Falha na conexão</span>
+      <br><small style="color:var(--gray-mid)">${dica}</small>`;
   }
 
   btn.disabled = false;
@@ -1727,9 +1786,11 @@ function doPost(e) {
     const data = JSON.parse(e.postData.contents);
     const ss = getOrCreateSpreadsheet();
     const clientId = gerarIdCliente(ss, data.nome);
-    gravarAbaCliente(ss, data, clientId);
-    atualizarMenu(ss, data, clientId);
-    return ok({ clientId });
+    const sheetId = gravarAbaCliente(ss, data, clientId);
+    atualizarMenu(ss, data, clientId, sheetId);
+    const spreadsheetUrl = ss.getUrl();
+    const sheetUrl = spreadsheetUrl + '#gid=' + sheetId;
+    return ok({ clientId, spreadsheetUrl, sheetUrl });
   } catch(err) {
     return err_({ error: err.message });
   }
@@ -1758,24 +1819,24 @@ function gerarIdCliente(ss, nome) {
 }
 
 function atualizarMenu(ss, data, clientId) {
-  let menu = ss.getSheetByName('📋 Menu');
+  var menu = ss.getSheetByName('📋 Menu');
   if (!menu) menu = criarAbaMenu(ss);
-  const last = menu.getLastRow();
-  const row = last + 1;
-  const areaStr = data.area === 'seduc' ? 'SEDUC — Estadual' : 'SEMED — Municipal';
-  const totalFmt = 'R$ ' + Number(data.totalDiff).toLocaleString('pt-BR', {minimumFractionDigits:2});
+  var last = menu.getLastRow();
+  var row = last + 1;
+  var areaStr = data.area === 'seduc' ? 'SEDUC — Estadual' : 'SEMED — Municipal';
+  var totalFmt = 'R$ ' + Number(data.totalDiff).toLocaleString('pt-BR', {minimumFractionDigits:2});
   menu.getRange(row, 1, 1, 7).setValues([[
     clientId, data.nome, data.matricula, areaStr,
-    totalFmt, data.dataCalculo,
-    '#' + data.nome.replace(/[^a-zA-Z0-9]/g,'').slice(0,20)
+    totalFmt, data.dataCalculo, data.nome.slice(0,25)
   ]]);
-  // Formatar row
   menu.getRange(row, 1, 1, 7)
     .setBackground(row % 2 === 0 ? '#EBF5F4' : '#FFFFFF')
     .setBorder(false,false,true,false,false,false,'#DDE3EC',SpreadsheetApp.BorderStyle.SOLID);
-  // Hyperlink para a aba
-  const abaNome = data.nome.slice(0, 25);
-  const linkFormula = \`=HYPERLINK("#gid=\${ss.getSheetByName(abaNome)?.getSheetId() || 0}","\${abaNome}")\`;
+  // Hyperlink para a aba — sem optional chaining para compatibilidade máxima
+  var abaNome = data.nome.slice(0, 25);
+  var targetSheet = ss.getSheetByName(abaNome);
+  var gid = targetSheet ? targetSheet.getSheetId() : 0;
+  var linkFormula = '=HYPERLINK("#gid=' + gid + '","' + abaNome + '")';
   menu.getRange(row, 2).setFormula(linkFormula);
 }
 
@@ -1812,6 +1873,7 @@ function gravarAbaCliente(ss, data, clientId) {
     sheet.clearContents();
     sheet.clearFormats();
   }
+  const sheetId = sheet.getSheetId();
 
   // ── CABEÇALHO INSTITUCIONAL ──
   sheet.getRange('A1:I1').merge()
