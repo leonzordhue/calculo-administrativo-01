@@ -64,8 +64,6 @@
     .brand-sub { font-size: 0.63rem; font-weight: 600; letter-spacing: 0.16em; text-transform: uppercase; color: var(--gold-light); margin-top: 0.1rem; }
     .header-badge { font-size: 0.65rem; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; background: rgba(201,169,62,0.18); border: 1px solid rgba(201,169,62,0.4); color: var(--gold-light); padding: 0.4em 1.1em; border-radius: 100px; }
     .header-actions { display: flex; gap: 0.5rem; align-items: center; }
-    .btn-settings { width: 36px; height: 36px; border-radius: 8px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: rgba(255,255,255,0.75); font-size: 1.1rem; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.14s; }
-    .btn-settings:hover { background: rgba(255,255,255,0.2); }
 
     /* ── HERO ── */
     .hero { background: linear-gradient(135deg, var(--teal) 0%, var(--teal-mid) 60%, var(--teal-light) 100%); padding: 2.2rem 1.5rem 3rem; position: relative; overflow: hidden; }
@@ -291,6 +289,31 @@
     .progress-bar-wrap { height: 3px; background: var(--gray-brd); }
     .progress-bar-fill { height: 100%; background: linear-gradient(90deg, var(--teal), var(--gold)); border-radius: 0; transition: width 0.4s cubic-bezier(0.16,1,0.3,1); }
 
+    /* ── CADASTRAR BLOCK ── */
+    .cadastrar-block { background:var(--white); border-radius:var(--radius); box-shadow:var(--shadow);
+      border:2px solid var(--teal-brd); margin-top:1.25rem; overflow:hidden; }
+    .cadastrar-inner { display:flex; align-items:center; gap:1.2rem; padding:1.25rem 1.5rem; }
+    .cadastrar-icon { font-size:2rem; flex-shrink:0; }
+    .cadastrar-info { flex:1; }
+    .cadastrar-title { font-size:1rem; font-weight:700; color:var(--text); margin-bottom:0.2rem; }
+    .cadastrar-sub { font-size:0.75rem; color:var(--gray-mid); line-height:1.5; }
+    .btn-cadastrar { flex-shrink:0; background:var(--teal); color:#fff; border:none; border-radius:10px;
+      padding:0.75em 1.8em; font-family:var(--font); font-size:0.95rem; font-weight:700;
+      cursor:pointer; transition:all 0.16s; white-space:nowrap; }
+    .btn-cadastrar:hover:not(:disabled) { background:#0a3f3a; transform:translateY(-1px); box-shadow:0 4px 14px rgba(11,74,68,0.3); }
+    .btn-cadastrar:disabled { opacity:0.6; cursor:not-allowed; }
+    .cadastrar-log { padding:0 1.5rem 1rem; }
+    .log-step { display:flex; align-items:flex-start; gap:0.6rem; padding:0.35rem 0;
+      border-bottom:1px solid var(--gray-brd); font-size:0.78rem; }
+    .log-step:last-child { border-bottom:none; }
+    .log-step .ls-icon { font-size:0.85rem; min-width:1.2rem; margin-top:0.05rem; }
+    .log-step .ls-text { color:var(--text); line-height:1.5; }
+    .log-step .ls-text strong { color:var(--teal); }
+    .log-step.ls-ok .ls-icon::after { content:'✅'; }
+    .log-step.ls-err .ls-icon::after { content:'❌'; }
+    .log-step.ls-wait .ls-icon::after { content:'⏳'; }
+    .log-step.ls-info .ls-icon::after { content:'ℹ️'; }
+
     /* ── LOCALIDADE BADGE ── */
     .localidade-badge { display:flex; align-items:center; gap:0.6rem; margin-top:0.5rem;
       padding:0.55rem 0.9rem; border-radius:8px; font-size:0.78rem; font-weight:600; }
@@ -335,7 +358,7 @@
       * { -webkit-print-color-adjust:exact !important; print-color-adjust:exact !important; color-adjust:exact !important; }
       body { background:#fff !important; font-size:9px; }
       .topbar, .site-header, .hero, .hero-wave, .stepper, .btn-actions, .site-footer,
-      .card-head .btn, .btn-settings, #step-selector, #step-form, .modal-overlay,
+      .card-head .btn, #step-selector, #step-form, .modal-overlay,
       #btn-nova-consulta, #btn-exportar, #btn-salvar { display:none !important; }
       .main-wrap { padding:0 !important; max-width:100% !important; }
       .card { box-shadow:none !important; border:1px solid #ccc !important; margin-bottom:0.5rem !important; page-break-inside:avoid; }
@@ -418,7 +441,6 @@
     </div>
     <div class="header-actions">
       <span class="header-badge">Cálculo de Diferenças Salariais</span>
-      <button class="btn-settings" onclick="abrirModal('modal-config')" title="Configurações">⚙️</button>
     </div>
   </div>
 </header>
@@ -855,8 +877,6 @@
     <!-- BOTÕES DE AÇÃO -->
     <div class="btn-actions" style="margin-bottom:1rem;" id="result-actions">
       <button class="btn btn-gold btn-lg" id="btn-exportar" onclick="exportarPDF()">📄 Exportar PDF</button>
-      <button class="btn btn-primary" id="btn-salvar" onclick="salvarSheets()">💾 Salvar no Google Sheets</button>
-      <span id="save-status-label"></span>
       <button class="btn btn-ghost" id="btn-nova-consulta" onclick="novaConsulta()">+ Nova Consulta</button>
     </div>
 
@@ -903,6 +923,25 @@
       </div>
     </div>
 
+    <!-- ── BLOCO CADASTRAR ── -->
+    <div class="cadastrar-block" id="cadastrar-block">
+      <div class="cadastrar-inner">
+        <div class="cadastrar-icon">📋</div>
+        <div class="cadastrar-info">
+          <div class="cadastrar-title">Cadastrar no Google Sheets</div>
+          <div class="cadastrar-sub">Registra o cálculo na planilha institucional LAADV — cria a aba do cliente e atualiza o Menu.</div>
+        </div>
+        <button class="btn-cadastrar" id="btn-salvar" onclick="salvarSheets()">
+          💾 Cadastrar
+        </button>
+      </div>
+      <!-- Log de status detalhado -->
+      <div id="cadastrar-log" class="cadastrar-log hidden">
+        <div id="cadastrar-log-steps"></div>
+      </div>
+      <div id="save-status-label" style="margin-top:0.5rem;"></div>
+    </div>
+
   </div><!-- /step-results -->
 
 </main><!-- /main-wrap -->
@@ -922,37 +961,7 @@
 </footer>
 
 <!-- ────────── MODAL DE CONFIGURAÇÕES ────────── -->
-<div class="modal-overlay" id="modal-config">
-  <div class="modal">
-    <div class="modal-head">
-      <div class="modal-head-title">⚙️ Configurações do Sistema</div>
-      <button class="modal-close" onclick="fecharModal('modal-config')">✕</button>
-    </div>
-    <div class="modal-body">
-      <div class="field mb-1">
-        <label class="field-label">URL do Apps Script (Google Sheets)</label>
-        <input type="url" id="cfg-url" placeholder="https://script.google.com/macros/s/xxxx/exec" />
-        <span class="field-hint">Cole aqui a URL de implantação do seu Apps Script (ver instruções abaixo)</span>
-      </div>
-      <div class="field mb-1">
-        <label class="field-label">Nome do Advogado Responsável</label>
-        <input type="text" id="cfg-adv" placeholder="Dr. Luis Albert" />
-      </div>
-      <details style="margin-top:1rem;">
-        <summary style="cursor:pointer;font-size:0.78rem;font-weight:700;color:var(--teal);padding:0.5rem 0;">📋 Ver código do Apps Script para implantação</summary>
-        <div style="margin-top:0.5rem;">
-          <div style="font-size:0.72rem;color:var(--text-mid);margin-bottom:0.5rem;">Cole este código em <strong>script.google.com</strong>, crie um novo projeto e implante como Web App (acesso: "Qualquer pessoa").</div>
-          <button class="btn btn-outline btn-sm" onclick="copiarAppScript()">📋 Copiar Código</button>
-          <pre class="code-block" id="appscript-code"></pre>
-        </div>
-      </details>
-    </div>
-    <div class="modal-foot">
-      <button class="btn btn-ghost" onclick="fecharModal('modal-config')">Cancelar</button>
-      <button class="btn btn-primary" onclick="salvarConfig()">✓ Salvar Configurações</button>
-    </div>
-  </div>
-</div>
+
 
 <script>
 // =============================================================
@@ -1642,350 +1651,199 @@ function exportarPDF() {
 
 async function salvarSheets() {
   if (!RESULTADO) { alert('Gere um cálculo primeiro.'); return; }
+
   const url = localStorage.getItem('laadv_url');
   if (!url) {
-    alert('Configure a URL do Apps Script nas Configurações (⚙️) antes de salvar.');
-    abrirModal('modal-config');
+    alert('URL do Apps Script não configurada. Recarregue a página.');
     return;
   }
 
-  const btn = document.getElementById('btn-salvar');
-  const statusEl = document.getElementById('save-status-label');
-  btn.disabled = true;
-  btn.textContent = '⏳ Salvando...';
-  statusEl.innerHTML = '';
+  const btn     = document.getElementById('btn-salvar');
+  const logEl   = document.getElementById('cadastrar-log');
+  const stepsEl = document.getElementById('cadastrar-log-steps');
+  const statusEl= document.getElementById('save-status-label');
 
+  // Helper de log
+  function addStep(tipo, texto) {
+    const div = document.createElement('div');
+    div.className = 'log-step ls-' + tipo;
+    div.innerHTML = '<span class="ls-icon"></span><span class="ls-text">' + texto + '</span>';
+    stepsEl.appendChild(div);
+    return div;
+  }
+  function updateStep(el, tipo, texto) {
+    el.className = 'log-step ls-' + tipo;
+    el.querySelector('.ls-text').innerHTML = texto;
+  }
+
+  // Reset
+  stepsEl.innerHTML = '';
+  statusEl.innerHTML = '';
+  logEl.classList.remove('hidden');
+  btn.disabled = true;
+  btn.textContent = '⏳ Cadastrando...';
+
+  // ── PASSO 1: Montar payload
+  const s1 = addStep('wait', 'Montando dados do cálculo...');
   const payload = {
-    area: RESULTADO.area,
-    nome: RESULTADO.nome,
-    matricula: RESULTADO.matricula,
-    cargo: RESULTADO.cargo,
-    classe: RESULTADO.classe || '',
-    refInicial: RESULTADO.refInicial,
-    refDevida: RESULTADO.refDevida,
-    municipio: RESULTADO.municipio || '',
-    pctLocalidade: RESULTADO.pctLocalidade || 0,
-    incluirRegencia: RESULTADO.incluirRegencia || false,
-    posseDate: RESULTADO.posseDate.toISOString().slice(0,10),
-    startDate: RESULTADO.startDate.toISOString().slice(0,10),
-    endDate: RESULTADO.endDate.toISOString().slice(0,10),
-    totalDiff: RESULTADO.totalDiff,
-    nMeses: RESULTADO.nMeses,
+    // ── Identificação
+    area:               RESULTADO.area,
+    nome:               RESULTADO.nome,
+    matricula:          RESULTADO.matricula,
+    cargo:              RESULTADO.cargo,
+    classe:             RESULTADO.classe || '',
+    advogado:           localStorage.getItem('laadv_adv') || 'Luis Albert',
+    // ── Referências (nome canônico + alias do Apps Script)
+    refInicial:         RESULTADO.refInicial,
+    refIngresso:        RESULTADO.refInicial,   // alias Apps Script
+    refDevida:          RESULTADO.refDevida,
+    // ── Progressões
     numProgressoesAtraso: RESULTADO.numProgressoesAtraso,
-    incluirExtras: RESULTADO.incluirExtras,
-    dataCalculo: new Date().toISOString().slice(0,10),
-    advogado: localStorage.getItem('laadv_adv') || 'Luis Albert',
+    progressoes:          RESULTADO.numProgressoesAtraso, // alias Apps Script
+    // ── Localidade / Regência
+    municipio:          RESULTADO.municipio || '',
+    pctLocalidade:      RESULTADO.pctLocalidade || 0,
+    incluirRegencia:    RESULTADO.incluirRegencia || false,
+    // ── Datas
+    posseDate:          RESULTADO.posseDate.toISOString().slice(0,10),
+    startDate:          RESULTADO.startDate.toISOString().slice(0,10),
+    endDate:            RESULTADO.endDate.toISOString().slice(0,10),
+    periodoInicio:      RESULTADO.startDate.toISOString().slice(0,10), // alias Apps Script
+    periodoFim:         RESULTADO.endDate.toISOString().slice(0,10),   // alias Apps Script
+    // ── Totais
+    totalDiff:          RESULTADO.totalDiff,
+    totalGeral:         RESULTADO.totalDiff, // alias Apps Script
+    nMeses:             RESULTADO.nMeses,
+    incluirExtras:      RESULTADO.incluirExtras,
+    dataCalculo:        new Date().toISOString().slice(0,10),
+    // ── Linhas do demonstrativo (rows + linhas como alias)
     rows: RESULTADO.rows.map(r => ({
-      competencia: r.competencia, refRecebida: r.refRecebida,
-      vencRecebido: r.vencRecebido, refDevida: r.refDevida,
-      vencDevido: r.vencDevido, lei: r.lei,
-      diffMensal: r.diffMensal, extras: r.extras,
-      totalLinha: r.totalLinha, tipo: r.tipo
+      competencia:  r.competencia,
+      refRecebida:  r.refRecebida,
+      vencRecebido: r.vencRecebido,
+      refDevida:    r.refDevida,
+      vencDevido:   r.vencDevido,
+      lei:          r.lei,
+      diffMensal:   r.diffMensal,
+      extras:       r.extras,
+      totalLinha:   r.totalLinha,
+      total:        r.totalLinha, // alias Apps Script
+      tipo:         r.tipo
+    })),
+    linhas: RESULTADO.rows.map(r => ({ // alias Apps Script
+      competencia:  r.competencia,
+      refRecebida:  r.refRecebida,
+      vencRecebido: r.vencRecebido,
+      refDevida:    r.refDevida,
+      vencDevido:   r.vencDevido,
+      lei:          r.lei,
+      diffMensal:   r.diffMensal,
+      extras:       r.extras,
+      total:        r.totalLinha
     }))
   };
+  updateStep(s1, 'ok', `Payload montado — <strong>${RESULTADO.rows.length} linhas</strong>, servidor: <strong>${RESULTADO.nome}</strong>`);
 
+  // ── PASSO 2: Conectar ao Apps Script
+  const s2 = addStep('wait', 'Conectando ao Apps Script...<br><small style="opacity:.6">' + url.slice(0,60) + '...</small>');
+
+  let rawText;
   try {
     const resp = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'text/plain;charset=utf-8' },
       body: JSON.stringify(payload)
     });
-
-    // Lê o body UMA VEZ como texto — depois faz o parse
-    // (resp.json() + resp.text() em sequência consomem o stream e falham)
-    const rawText = await resp.text();
+    rawText = await resp.text();
 
     if (!resp.ok) {
-      throw new Error(`HTTP ${resp.status} — ${rawText.slice(0, 120)}`);
+      updateStep(s2, 'err', `Servidor retornou HTTP <strong>${resp.status}</strong>`);
+      addStep('err', 'Resposta bruta: <code style="font-size:0.7rem;word-break:break-all;">' + escHtml(rawText.slice(0,300)) + '</code>');
+      addStep('info', 'Verifique: (1) URL correta? (2) Web App implantado como <strong>"Qualquer pessoa"</strong>? (3) Autorização concedida?');
+      btn.disabled = false; btn.textContent = '💾 Cadastrar';
+      return;
     }
-
-    let data;
-    try {
-      data = JSON.parse(rawText);
-    } catch(_) {
-      throw new Error('Resposta do Apps Script não é JSON válido: ' + rawText.slice(0, 120));
-    }
-
-    if (data && data.success) {
-      const sheetUrl    = data.sheetUrl || '';
-      const planilhaUrl = data.spreadsheetUrl || sheetUrl;
-      const clientId    = data.clientId || '—';
-      let linkHtml = '';
-      if (sheetUrl) {
-        linkHtml = `<br><a href="${sheetUrl}" target="_blank"
-          style="display:inline-flex;align-items:center;gap:0.4rem;margin-top:0.4rem;
-                 padding:0.4em 0.9em;background:var(--teal);color:#fff;border-radius:7px;
-                 font-size:0.78rem;font-weight:700;text-decoration:none;">
-          🔗 Abrir aba do cliente no Google Sheets</a>`;
-      } else if (planilhaUrl) {
-        linkHtml = `<br><a href="${planilhaUrl}" target="_blank"
-          style="display:inline-flex;align-items:center;gap:0.4rem;margin-top:0.4rem;
-                 padding:0.4em 0.9em;background:var(--teal);color:#fff;border-radius:7px;
-                 font-size:0.78rem;font-weight:700;text-decoration:none;">
-          🔗 Abrir planilha no Google Sheets</a>`;
-      }
-      statusEl.innerHTML = `<span class="save-status ok">✓ Salvo com sucesso — ID: ${clientId}</span>${linkHtml}`;
-    } else {
-      const msg = (data && data.error) ? data.error : 'Resposta inesperada do servidor';
-      statusEl.innerHTML = `<span class="save-status fail">✕ Erro do Apps Script: ${msg}</span>
-        <br><small style="color:var(--gray-mid)">Verifique se a URL está correta e se o Web App está implantado como "Qualquer pessoa".</small>`;
-    }
+    updateStep(s2, 'ok', `Conexão estabelecida — HTTP <strong>${resp.status}</strong>`);
   } catch(e) {
-    const isNetwork = e.message.includes('Failed to fetch') || e.message.includes('NetworkError');
-    const dica = isNetwork
-      ? 'Erro de rede ou CORS. Verifique se a URL do Apps Script está correta e se o acesso está definido como "Qualquer pessoa".'
-      : e.message;
-    statusEl.innerHTML = `<span class="save-status fail">✕ Falha na conexão</span>
-      <br><small style="color:var(--gray-mid)">${dica}</small>`;
+    updateStep(s2, 'err', 'Falha de rede: <strong>' + escHtml(e.message) + '</strong>');
+    addStep('info', 'Causas comuns: URL inválida, CORS bloqueado, ou Apps Script não implantado.');
+    btn.disabled = false; btn.textContent = '💾 Cadastrar';
+    return;
+  }
+
+  // ── PASSO 3: Processar resposta JSON
+  const s3 = addStep('wait', 'Processando resposta do Apps Script...');
+  let data;
+  try {
+    data = JSON.parse(rawText);
+  } catch(_) {
+    updateStep(s3, 'err', 'A resposta não é JSON válido.');
+    addStep('err', 'Resposta bruta: <code style="font-size:0.7rem;word-break:break-all;">' + escHtml(rawText.slice(0,400)) + '</code>');
+    addStep('info', 'Isso geralmente indica um erro de execução no Apps Script. Verifique os Logs em script.google.com → Execuções.');
+    btn.disabled = false; btn.textContent = '💾 Cadastrar';
+    return;
+  }
+
+  if (!data.success) {
+    updateStep(s3, 'err', 'Apps Script retornou erro: <strong>' + escHtml(data.error || 'Desconhecido') + '</strong>');
+    addStep('info', 'Verifique os Logs de execução em <strong>script.google.com → Execuções</strong> para o detalhe do erro.');
+    btn.disabled = false; btn.textContent = '💾 Cadastrar';
+    return;
+  }
+  updateStep(s3, 'ok', `Resposta válida — ID do cliente: <strong>${data.clientId || '—'}</strong>`);
+
+  // ── PASSO 4: Confirmar planilha e link
+  const s4 = addStep('wait', 'Confirmando planilha e link...');
+  const sheetUrl    = data.sheetUrl || '';
+  const planilhaUrl = data.spreadsheetUrl || '';
+
+  if (sheetUrl) {
+    updateStep(s4, 'ok', `Aba do cliente criada/atualizada no Google Sheets`);
+    statusEl.innerHTML = `
+      <div style="margin-top:0.75rem;padding:1rem 1.25rem;background:var(--teal-bg);border:1.5px solid var(--teal-brd);border-radius:10px;">
+        <div style="font-size:0.82rem;font-weight:700;color:var(--teal);margin-bottom:0.5rem;">✅ Cadastrado com sucesso — ID: ${data.clientId || '—'}</div>
+        <a href="${sheetUrl}" target="_blank"
+          style="display:inline-flex;align-items:center;gap:0.5rem;padding:0.55em 1.2em;
+                 background:var(--teal);color:#fff;border-radius:8px;font-weight:700;
+                 font-size:0.85rem;text-decoration:none;margin-right:0.5rem;">
+          📊 Abrir aba do cliente
+        </a>
+        ${planilhaUrl ? `<a href="${planilhaUrl}" target="_blank"
+          style="display:inline-flex;align-items:center;gap:0.5rem;padding:0.55em 1.2em;
+                 background:#fff;color:var(--teal);border:1.5px solid var(--teal-brd);border-radius:8px;
+                 font-weight:700;font-size:0.85rem;text-decoration:none;">
+          📋 Ver planilha completa
+        </a>` : ''}
+      </div>`;
+  } else if (planilhaUrl) {
+    updateStep(s4, 'ok', 'Salvo na planilha (link da aba não retornado).');
+    statusEl.innerHTML = `
+      <div style="margin-top:0.75rem;padding:1rem 1.25rem;background:var(--teal-bg);border:1.5px solid var(--teal-brd);border-radius:10px;">
+        <div style="font-size:0.82rem;font-weight:700;color:var(--teal);margin-bottom:0.5rem;">✅ Cadastrado — ID: ${data.clientId || '—'}</div>
+        <a href="${planilhaUrl}" target="_blank"
+          style="display:inline-flex;align-items:center;gap:0.5rem;padding:0.55em 1.2em;
+                 background:var(--teal);color:#fff;border-radius:8px;font-weight:700;
+                 font-size:0.85rem;text-decoration:none;">
+          📋 Abrir planilha no Google Sheets
+        </a>
+      </div>`;
+  } else {
+    updateStep(s4, 'info', 'Salvo, mas nenhum link de planilha foi retornado pelo Apps Script.');
   }
 
   btn.disabled = false;
-  btn.textContent = '💾 Salvar no Google Sheets';
+  btn.textContent = '✅ Cadastrado';
+  setTimeout(() => { btn.textContent = '💾 Cadastrar'; }, 4000);
 }
 
+function escHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
 // ─────────────────────────────────────────
 // 10. MODAL / CONFIGURAÇÕES
 // ─────────────────────────────────────────
 
-function abrirModal(id) {
-  document.getElementById(id).classList.add('open');
-  if (id === 'modal-config') {
-    const url = localStorage.getItem('laadv_url') || '';
-    const adv = localStorage.getItem('laadv_adv') || '';
-    document.getElementById('cfg-url').value = url;
-    document.getElementById('cfg-adv').value = adv;
-    document.getElementById('appscript-code').textContent = getAppScriptCode();
-  }
-}
-function fecharModal(id) {
-  document.getElementById(id).classList.remove('open');
-}
-function salvarConfig() {
-  localStorage.setItem('laadv_url', document.getElementById('cfg-url').value.trim());
-  localStorage.setItem('laadv_adv', document.getElementById('cfg-adv').value.trim());
-  fecharModal('modal-config');
-  alert('Configurações salvas com sucesso!');
-}
-function copiarAppScript() {
-  navigator.clipboard?.writeText(getAppScriptCode()).then(() => alert('Código copiado!')).catch(() => alert('Copie manualmente o código exibido.'));
-}
 
-// ─────────────────────────────────────────
-// 11. CÓDIGO APPS SCRIPT
-// ─────────────────────────────────────────
-function getAppScriptCode() {
-  return `// ═══════════════════════════════════════════════════
-// Apps Script — LAADV Formulário de Cálculo Administrativo
-// Implante como Web App (executar como: eu | acesso: qualquer pessoa)
-// ═══════════════════════════════════════════════════
-
-const SPREADSHEET_NAME = 'Formulário de Cálculo Administrativo - LAADV';
-
-function doPost(e) {
-  try {
-    const data = JSON.parse(e.postData.contents);
-    const ss = getOrCreateSpreadsheet();
-    const clientId = gerarIdCliente(ss, data.nome);
-    const sheetId = gravarAbaCliente(ss, data, clientId);
-    atualizarMenu(ss, data, clientId, sheetId);
-    const spreadsheetUrl = ss.getUrl();
-    const sheetUrl = spreadsheetUrl + '#gid=' + sheetId;
-    return ok({ clientId, spreadsheetUrl, sheetUrl });
-  } catch(err) {
-    return err_({ error: err.message });
-  }
-}
-
-function doGet(e) {
-  return ok({ status: 'online', sistema: 'LAADV Cálculo Administrativo' });
-}
-
-function getOrCreateSpreadsheet() {
-  const files = DriveApp.getFilesByName(SPREADSHEET_NAME);
-  if (files.hasNext()) {
-    return SpreadsheetApp.open(files.next());
-  }
-  const ss = SpreadsheetApp.create(SPREADSHEET_NAME);
-  criarAbaMenu(ss);
-  return ss;
-}
-
-function gerarIdCliente(ss, nome) {
-  const menuSheet = ss.getSheetByName('📋 Menu');
-  if (!menuSheet) return 'CLI-001';
-  const last = menuSheet.getLastRow();
-  const num = String(last).padStart(3, '0');
-  return 'CLI-' + num;
-}
-
-function atualizarMenu(ss, data, clientId) {
-  var menu = ss.getSheetByName('📋 Menu');
-  if (!menu) menu = criarAbaMenu(ss);
-  var last = menu.getLastRow();
-  var row = last + 1;
-  var areaStr = data.area === 'seduc' ? 'SEDUC — Estadual' : 'SEMED — Municipal';
-  var totalFmt = 'R$ ' + Number(data.totalDiff).toLocaleString('pt-BR', {minimumFractionDigits:2});
-  menu.getRange(row, 1, 1, 7).setValues([[
-    clientId, data.nome, data.matricula, areaStr,
-    totalFmt, data.dataCalculo, data.nome.slice(0,25)
-  ]]);
-  menu.getRange(row, 1, 1, 7)
-    .setBackground(row % 2 === 0 ? '#EBF5F4' : '#FFFFFF')
-    .setBorder(false,false,true,false,false,false,'#DDE3EC',SpreadsheetApp.BorderStyle.SOLID);
-  // Hyperlink para a aba — sem optional chaining para compatibilidade máxima
-  var abaNome = data.nome.slice(0, 25);
-  var targetSheet = ss.getSheetByName(abaNome);
-  var gid = targetSheet ? targetSheet.getSheetId() : 0;
-  var linkFormula = '=HYPERLINK("#gid=' + gid + '","' + abaNome + '")';
-  menu.getRange(row, 2).setFormula(linkFormula);
-}
-
-function criarAbaMenu(ss) {
-  let menu = ss.getSheetByName('📋 Menu');
-  if (!menu) {
-    ss.insertSheet('📋 Menu', 0);
-    menu = ss.getSheetByName('📋 Menu');
-  }
-  menu.clearContents();
-  // Cabeçalho
-  const headers = ['ID', 'Nome do Cliente', 'Matrícula', 'Área', 'Total Diferença', 'Data', 'Link'];
-  menu.getRange(1, 1, 1, headers.length).setValues([headers])
-    .setBackground('#0B4A44').setFontColor('#FFFFFF')
-    .setFontWeight('bold').setFontSize(10);
-  menu.setFrozenRows(1);
-  menu.setColumnWidth(1, 80);
-  menu.setColumnWidth(2, 220);
-  menu.setColumnWidth(3, 130);
-  menu.setColumnWidth(4, 160);
-  menu.setColumnWidth(5, 140);
-  menu.setColumnWidth(6, 110);
-  menu.setColumnWidth(7, 200);
-  return menu;
-}
-
-function gravarAbaCliente(ss, data, clientId) {
-  const abaNome = data.nome.slice(0, 25);
-  let sheet = ss.getSheetByName(abaNome);
-  if (!sheet) {
-    ss.insertSheet(abaNome);
-    sheet = ss.getSheetByName(abaNome);
-  } else {
-    sheet.clearContents();
-    sheet.clearFormats();
-  }
-  const sheetId = sheet.getSheetId();
-
-  // ── CABEÇALHO INSTITUCIONAL ──
-  sheet.getRange('A1:I1').merge()
-    .setValue('LUÍS ALBERT ADVOCACIA — CÁLCULO DE DIFERENÇAS SALARIAIS')
-    .setBackground('#0B4A44').setFontColor('#C9A93E')
-    .setFontWeight('bold').setFontSize(13)
-    .setHorizontalAlignment('center');
-
-  const areaStr = data.area === 'seduc' ? 'SEDUC/AM — Rede Estadual' : 'SEMED/AM — Rede Municipal';
-  sheet.getRange('A2:I2').merge()
-    .setValue(areaStr + ' | Progressão Horizontal | ' + (data.classe ? 'Classe ' + data.classe + ' | ' : '') + 'Lei n.3.951/2013 → Lei n.4.836/2019 | STJ Tema 1075')
-    .setBackground('#145E58').setFontColor('#FFFFFF')
-    .setFontSize(9).setHorizontalAlignment('center');
-
-  // ── DADOS DO SERVIDOR ──
-  const dadosLabel = [['IDENTIFICAÇÃO DO SERVIDOR', '','','','','','','','']];
-  sheet.getRange('A4:I4').merge().setValue('▶ DADOS DO SERVIDOR')
-    .setBackground('#EBF5F4').setFontColor('#0B4A44').setFontWeight('bold').setFontSize(10);
-
-  const dadosInfo = [
-    ['ID / Processo:', clientId, '', 'Advogado:', data.advogado || 'Luis Albert', '', 'Data Cálculo:', data.dataCalculo, ''],
-    ['Nome:', data.nome, '','','','','','',''],
-    ['Matrícula/CPF:', data.matricula, '', 'Cargo:', data.cargo || '—', '', 'Área:', areaStr, ''],
-    ['Data Posse:', data.posseDate, '', (data.classe ? 'Classe:' : ''), (data.classe || ''), '', 'Ref. Inicial:', data.refInicial, ''],
-    ['Ref. Devida:', data.refDevida, '', 'Progressões atraso:', data.numProgressoesAtraso, '', 'Incluir 13°/Férias:', data.incluirExtras ? 'SIM' : 'NÃO', ''],
-    ['Período:', data.startDate + ' a ' + data.endDate, '','','','','','',''],
-  ];
-  sheet.getRange(5, 1, dadosInfo.length, 9).setValues(dadosInfo);
-  sheet.getRange(5, 1, dadosInfo.length, 1).setFontWeight('bold').setFontColor('#0B4A44');
-
-  // ── RESULTADO SUMÁRIO ──
-  const rowSumario = 5 + dadosInfo.length + 1;
-  sheet.getRange(rowSumario, 1, 1, 9).merge()
-    .setValue('▶ RESULTADO DA ANÁLISE JURÍDICA')
-    .setBackground('#EBF5F4').setFontColor('#0B4A44').setFontWeight('bold').setFontSize(10);
-  sheet.getRange(rowSumario+1, 1, 1, 4).setValues([[
-    'Referência DEVIDA: ' + (data.classe ? data.classe + ' / ' : '') + 'Ref. ' + data.refDevida,
-    '', '', 'Total de Progressões em Atraso: ' + data.numProgressoesAtraso
-  ]]);
-  sheet.getRange(rowSumario+2, 1, 1, 4).setValues([[
-    'Diferença Total Acumulada: R$ ' + Number(data.totalDiff).toLocaleString('pt-BR',{minimumFractionDigits:2}),
-    '', '', 'Período Analisado: ' + data.nMeses + ' meses'
-  ]]);
-  sheet.getRange(rowSumario+1, 1, 2, 1).setFontWeight('bold').setFontColor('#C9A93E').setFontSize(11);
-
-  // ── DEMONSTRATIVO MENSAL ──
-  const rowTabInicio = rowSumario + 4;
-  sheet.getRange(rowTabInicio, 1, 1, 9).merge()
-    .setValue('▶ DEMONSTRATIVO MENSAL')
-    .setBackground('#EBF5F4').setFontColor('#0B4A44').setFontWeight('bold').setFontSize(10);
-
-  const headers = ['COMPETÊNCIA','REF. RECEBIDA','VENC. RECEBIDO','REF. DEVIDA','VENC. DEVIDO','LEI / REAJUSTE','DIFERENÇA MENSAL','13º/FÉRIAS','TOTAL LINHA'];
-  sheet.getRange(rowTabInicio+1, 1, 1, 9).setValues([headers])
-    .setBackground('#0B4A44').setFontColor('#FFFFFF').setFontWeight('bold').setFontSize(9);
-  sheet.setFrozenRows(rowTabInicio+1);
-
-  const tabData = data.rows.map(r => [
-    r.competencia, r.refRecebida, r.vencRecebido,
-    r.refDevida, r.vencDevido, r.lei,
-    r.diffMensal, r.extras > 0 ? r.extras : '', r.totalLinha
-  ]);
-  if (tabData.length > 0) {
-    sheet.getRange(rowTabInicio+2, 1, tabData.length, 9).setValues(tabData);
-    // Formatar moeda
-    const moedaCols = [3,5,7,8,9];
-    moedaCols.forEach(c => {
-      sheet.getRange(rowTabInicio+2, c, tabData.length, 1)
-        .setNumberFormat('R$ #,##0.00');
-    });
-    // Zebra + highlight 13°/férias
-    data.rows.forEach((r, i) => {
-      const rowN = rowTabInicio + 2 + i;
-      if (r.tipo === '13o') sheet.getRange(rowN,1,1,9).setBackground('#FBF5E0');
-      else if (r.tipo === 'ferias') sheet.getRange(rowN,1,1,9).setBackground('#EBF5F4');
-      else if (i % 2 === 0) sheet.getRange(rowN,1,1,9).setBackground('#F9FAFB');
-    });
-    // Total
-    const rowTotal = rowTabInicio + 2 + tabData.length;
-    sheet.getRange(rowTotal, 1, 1, 6).merge()
-      .setValue('TOTAL GERAL ACUMULADO — Diferença Salarial Devida')
-      .setBackground('#0B4A44').setFontColor('#C9A93E').setFontWeight('bold');
-    sheet.getRange(rowTotal, 7).setValue(data.totalDiff)
-      .setBackground('#0B4A44').setFontColor('#FFFFFF').setFontWeight('bold')
-      .setNumberFormat('R$ #,##0.00');
-    sheet.getRange(rowTotal, 8, 1, 2).setBackground('#0B4A44');
-  }
-
-  // Colunas
-  sheet.setColumnWidth(1, 130);
-  sheet.setColumnWidth(2, 100);
-  sheet.setColumnWidth(3, 130);
-  sheet.setColumnWidth(4, 100);
-  sheet.setColumnWidth(5, 130);
-  sheet.setColumnWidth(6, 230);
-  sheet.setColumnWidth(7, 130);
-  sheet.setColumnWidth(8, 100);
-  sheet.setColumnWidth(9, 120);
-}
-
-function ok(data) {
-  return ContentService.createTextOutput(JSON.stringify({ success: true, ...data }))
-    .setMimeType(ContentService.MimeType.JSON);
-}
-function err_(data) {
-  return ContentService.createTextOutput(JSON.stringify({ success: false, ...data }))
-    .setMimeType(ContentService.MimeType.JSON);
-}`;
-}
-
-// ─────────────────────────────────────────
-// 12. LIVE PREVIEW DA FICHA
-// ─────────────────────────────────────────
 
 const PREVIEW_FIELDS_SEDUC = [
   { section: '📋 Identificação do Servidor' },
@@ -2135,9 +1993,14 @@ function bindPreviewListeners() {
 // ─────────────────────────────────────────
 
 document.addEventListener('DOMContentLoaded', () => {
+  // URL do Apps Script pré-configurada (planilha LAADV_Integracao)
+  const WEBAPP_URL = 'https://script.google.com/macros/s/AKfycbz6nrHLu8LqXOWEIcV30kmXIX9euSghak7buBu8Y6OM6J8C0-M8ROxmh_OARbXsEfPQ/exec';
+  if (!localStorage.getItem('laadv_url')) {
+    localStorage.setItem('laadv_url', WEBAPP_URL);
+  }
   // Fechar modais ao clicar fora
   document.querySelectorAll('.modal-overlay').forEach(o => {
-    o.addEventListener('click', e => { if (e.target === o) fecharModal(o.id); });
+    o.addEventListener('click', e => { if (e.target === o) o.classList.remove('open'); });
   });
   // Definir data fim padrão como hoje
   const hoje = new Date().toISOString().slice(0,10);
